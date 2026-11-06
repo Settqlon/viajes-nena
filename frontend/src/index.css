@@ -535,3 +535,161 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 }
 
 
+
+/* ================= ASISTENTE MODULAR / STEP WIZARD ================= */
+.wizard-header {
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  border-bottom: 1.5px solid var(--border);
+  padding: 16px 20px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.wizard-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: relative;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.wizard-step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 140px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 10px;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.wizard-step-item:hover:not(:disabled) {
+  background: rgba(14, 165, 164, 0.08);
+}
+
+.wizard-step-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.wizard-step-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  border: 2px solid var(--border);
+  background: #fff;
+  color: var(--muted);
+}
+
+.wizard-step-item.active .wizard-step-badge {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.2);
+}
+
+.wizard-step-item.completed .wizard-step-badge {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+}
+
+.wizard-step-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.wizard-step-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.wizard-step-item.active .wizard-step-title {
+  color: var(--primary-dark);
+}
+
+.wizard-step-item.completed .wizard-step-title {
+  color: #065f46;
+}
+
+.wizard-step-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.wizard-divider {
+  width: 20px;
+  height: 2px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.wizard-step-item.completed + .wizard-divider {
+  background: #10b981;
+}
+
+.wizard-body {
+  padding: 22px;
+}
+
+.wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 22px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* Tarjetas de Acompañantes en Wizard */
+.acomp-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.acomp-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  transition: all 0.15s;
+}
+
+.acomp-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(15, 27, 45, 0.05);
+}
+
+/* Modal de éxito de reserva */
+.reserva-success-banner {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border: 1.5px solid #6ee7b7;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
