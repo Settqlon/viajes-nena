@@ -29,6 +29,45 @@ Para instalar y ejecutar este proyecto en otra computadora sin ningún error, as
 
 ---
 
+## 📦 Librerías y Dependencias con Versiones Exactas
+
+Todas las versiones exactas están congeladas en los archivos [`requirements.txt`](./requirements.txt) (Python) y [`frontend/package.json`](./frontend/package.json) (React/Node). A continuación, el detalle de cada librería y su función:
+
+### 🐍 Backend (Python) — Especificadas en `requirements.txt`
+| Librería | Versión Exacta | Función en el Proyecto |
+| :--- | :--- | :--- |
+| **`fastapi`** | `0.162.0` | Framework web principal y arquitectura de endpoints RESTful. |
+| **`uvicorn`** | `0.54.0` | Servidor ASGI de alto rendimiento para correr la API. |
+| **`sqlmodel`** | `0.0.27` | ORM híbrido (Pydantic + SQLAlchemy) para modelar y consultar la BD. |
+| **`sqlalchemy`** | `2.0.55` | Motor de base de datos relacional y gestión de sesiones. |
+| **`psycopg2-binary`** | `2.9.13` | Driver nativo C para la conexión rápida con PostgreSQL. |
+| **`pydantic`** | `2.14.2` | Validación estricta de datos, esquemas de entrada/salida y tipos. |
+| **`PyJWT`** | `2.15.1` | Codificación, firma y decodificación de tokens JWT de autenticación. |
+| **`python-jose`** | `3.5.0` | Implementación de estándares JOSE/JWT para seguridad. |
+| **`passlib`** | `1.7.4` | Manejo de hashing seguro de contraseñas. |
+| **`bcrypt`** | `4.0.1` | Algoritmo criptográfico de hashing para contraseñas de usuarios. |
+| **`python-multipart`** | `0.0.33` | Procesamiento de formularios `multipart/form-data` y login OAuth2. |
+| **`python-dotenv`** | `1.2.4` | Carga automática de variables de entorno desde el archivo `.env`. |
+| **`requests`** | `2.34.2` | Cliente HTTP para sincronización de tasas de cambio (BCV / COP). |
+| **`httpx`** | `0.28.1` | Cliente HTTP asíncrono para integraciones externas. |
+| **`google-genai`** | `2.34.0` | SDK oficial de Google Gemini para el asistente inteligente del sistema. |
+| **`email-validator`** | `2.3.0` | Validación estricta de direcciones de correo electrónico. |
+| **`cryptography`** | `50.0.2` | Primitivas criptográficas para cifrado y firmas digitales. |
+
+### ⚛️ Frontend (React) — Especificadas en `frontend/package.json`
+| Librería | Versión Exacta | Función en el Proyecto |
+| :--- | :--- | :--- |
+| **`react`** | `^19.3.1` | Biblioteca base para la construcción de interfaces de usuario interactivas. |
+| **`react-dom`** | `^19.3.1` | Renderizado eficiente de componentes de React en el navegador. |
+| **`vite`** | `^8.3.4` | Entorno de desarrollo ultrarrápido y empaquetador de producción. |
+| **`axios`** | `^1.20.0` | Cliente HTTP con interceptores automáticos del token JWT. |
+| **`lucide-react`** | `^1.66.0` | Colección moderna de íconos vectoriales para toda la interfaz. |
+| **`recharts`** | `^3.10.1` | Generación de gráficos analíticos interactivos (estadísticas y finanzas). |
+| **`jwt-decode`** | `^4.0.0` | Decodificación rápida en cliente del token JWT para lectura de roles y sesión. |
+| **`react-router-dom`**| `^7.18.4` | Enrutamiento declarativo del frontend. |
+
+---
+
 ## 🚀 Guía Paso a Paso para Desplegar en Otra Computadora
 
 ### Paso 1: Clonar el Repositorio
