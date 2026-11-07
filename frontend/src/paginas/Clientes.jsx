@@ -17,8 +17,8 @@ import {
     METODOS_PAGO, BadgeMetodoPago, CalculadoraDivisas, ModalLiquidarSaldo
 } from '../componentes/UI';
 import MapaAsientos from '../componentes/MapaAsientos';
+import { ABONO_POR_INTEGRANTE, calcularTarifaPorEdad } from '../servicios/tarifasServicios';
 
-const ABONO_POR_INTEGRANTE = 30;
 const FORM_INICIAL = {
     id_cliente: '',
     tipo_documento: 'Cédula',
@@ -38,17 +38,6 @@ const ACOMP_VACIO = {
     telefono: '',
     correo_electronico: '',
     autocompletado: false
-};
-
-const calcularTarifaPorEdad = (precioBase, edad) => {
-    const ed = parseInt(edad) || 0;
-    if (ed < 3) {
-        return { monto: 0, etiqueta: 'Gratis (<3 años)', tipo: 'success', pagaAbono: false };
-    }
-    if (ed < 13) {
-        return { monto: Number((precioBase * 0.75).toFixed(2)), etiqueta: '-25% Niño (3-12)', tipo: 'warning', pagaAbono: true };
-    }
-    return { monto: precioBase, etiqueta: 'Tarifa Completa', tipo: 'neutral', pagaAbono: true };
 };
 
 export default function Clientes({ esAdmin = true, esOperador = false, esVendedor = false }) {
