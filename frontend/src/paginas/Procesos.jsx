@@ -127,21 +127,18 @@ export default function Procesos() {
 
             {error && <div className="alert alert-error">{error}</div>}
 
-            <div className="grid grid-3" style={{ marginBottom: 20 }}>
-                <StatCard icono={PlayCircle} color="primary" etiqueta="En ejecución" valor={enEjecucion} pie="Viajes y tareas en curso" />
-                <StatCard icono={CheckCircle2} color="success" etiqueta="Completados" valor={completados} pie="Operaciones finalizadas" />
-                <StatCard icono={PauseCircle} color="accent" etiqueta="Pausados" valor={pausados} pie="En espera o reprogramación" />
-            </div>
-
             {mostrarForm && (
-                <form onSubmit={handleSubmit} className="card fade-in" style={{ marginBottom: 20 }}>
+                <form onSubmit={handleSubmit} className="card fade-in" style={{ marginBottom: 20, border: '1.5px solid var(--primary)' }}>
                     <div className="card-header">
                         <div className="card-title">{idEditando ? `Editar Proceso #${idEditando}` : 'Registrar Proceso Operativo'}</div>
+                        <button type="button" className="btn btn-ghost" onClick={cancelarFormulario}>
+                            <X size={16} />
+                        </button>
                     </div>
                     <div className="form-grid">
                         <div className="field">
                             <label>Nombre del proceso</label>
-                            <input name="nom_pro" value={form.nom_pro} onChange={handleChange} placeholder="Ej. Logística Viaje — Contratación de unidades" required />
+                            <input name="nom_pro" value={form.nom_pro} onChange={handleChange} placeholder="Ej. Logística Viaje — Contratación de unidades" autoFocus required />
                         </div>
                         <div className="field">
                             <label>Usuario responsable</label>
@@ -194,6 +191,12 @@ export default function Procesos() {
                     </div>
                 </form>
             )}
+
+            <div className="grid grid-3" style={{ marginBottom: 20 }}>
+                <StatCard icono={PlayCircle} color="primary" etiqueta="En ejecución" valor={enEjecucion} pie="Viajes y tareas en curso" />
+                <StatCard icono={CheckCircle2} color="success" etiqueta="Completados" valor={completados} pie="Operaciones finalizadas" />
+                <StatCard icono={PauseCircle} color="accent" etiqueta="Pausados" valor={pausados} pie="En espera o reprogramación" />
+            </div>
 
             <div className="card">
                 <div className="card-header">

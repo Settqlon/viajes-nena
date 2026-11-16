@@ -40,7 +40,7 @@ const ACOMP_VACIO = {
     autocompletado: false
 };
 
-export default function Clientes({ esAdmin = true, esOperador = false, esVendedor = false }) {
+export default function Clientes({ esAdmin = true, esOperador = false, esVendedor = false, abrirFormularioInicial = false, onFormularioInicialAbierto }) {
     const [clientes, setClientes] = useState([]);
     const [viajes, setViajes] = useState([]);
     const [destinos, setDestinos] = useState([]);
@@ -103,6 +103,17 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
     };
 
     useEffect(() => { cargarDatos(); }, []);
+
+    useEffect(() => {
+        if (abrirFormularioInicial) {
+            setIdEditando(null);
+            setClienteExistenteReserva(null);
+            setAsignarViajeAhora(true);
+            setPasoWizard(1);
+            setMostrarForm(true);
+            if (onFormularioInicialAbierto) onFormularioInicialAbierto();
+        }
+    }, [abrirFormularioInicial]);
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -594,7 +605,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                             setMostrarForm(true);
                         }}
                     >
-                        <Plus size={16} /> + Nuevo Cliente / Viaje
+                        <Plus size={16} /> Nuevo Cliente / Viaje
                     </button>
                 )}
             </PageHeader>

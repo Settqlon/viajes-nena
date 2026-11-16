@@ -171,7 +171,7 @@ export default function Catalogo({ esAdmin = true, esOperador = false, esVendedo
                                 else setMostrarFormDestino(true);
                             }}
                         >
-                            {mostrarFormDestino ? <><X size={16} /> Cancelar</> : <><Plus size={16} /> + Nuevo Destino</>}
+                            {mostrarFormDestino ? <><X size={16} /> Cancelar</> : <><Plus size={16} /> Nuevo Destino</>}
                         </button>
                     ) : (
                         <button
@@ -181,7 +181,7 @@ export default function Catalogo({ esAdmin = true, esOperador = false, esVendedo
                                 else setMostrarFormPaquete(true);
                             }}
                         >
-                            {mostrarFormPaquete ? <><X size={16} /> Cancelar</> : <><Plus size={16} /> + Nuevo Paquete</>}
+                            {mostrarFormPaquete ? <><X size={16} /> Cancelar</> : <><Plus size={16} /> Nuevo Paquete</>}
                         </button>
                     )
                 )}

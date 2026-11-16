@@ -41,7 +41,7 @@ function Ranking({ datos, campoValor, formato = (v) => v, campoSub, formatoSub =
     );
 }
 
-export default function Dashboard() {
+export default function Dashboard({ onNavegar }) {
     const [datos, setDatos] = useState(null);
     const [error, setError] = useState('');
 
@@ -109,6 +109,8 @@ export default function Dashboard() {
                                 return (
                                     <div
                                         key={s.id_viaje}
+                                        onClick={() => onNavegar && onNavegar(s.reservas_con_deuda > 0 ? 'reservas' : 'viajes')}
+                                        title={s.reservas_con_deuda > 0 ? 'Ir a Reservas para cobrar saldos pendientes' : 'Ir a Viajes Programados'}
                                         style={{
                                             border: s.reservas_con_deuda > 0 && (s.nivel === 'urgente' || s.nivel === 'proximo')
                                                 ? '1.5px solid #f59e0b'
@@ -118,7 +120,9 @@ export default function Dashboard() {
                                             background: '#f8fafc',
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            gap: 6
+                                            gap: 6,
+                                            cursor: 'pointer',
+                                            transition: 'transform 0.15s, box-shadow 0.15s'
                                         }}
                                     >
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>

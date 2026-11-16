@@ -151,9 +151,11 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
             >
                 <button
                     className="btn btn-primary"
-                    onClick={() => setMostrarModalNuevaReserva(true)}
+                    onClick={() => {
+                        if (onIrAClientes) onIrAClientes();
+                    }}
                 >
-                    <Plus size={16} /> + Nueva Reserva Asistida
+                    <Plus size={16} /> Nueva Reserva
                 </button>
             </PageHeader>
 
@@ -306,9 +308,13 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
                                                 {fin.falta > 0 ? formatoMoneda(fin.falta) : '✓ Liquidado'}
                                             </td>
                                             <td>
-                                                <Badge tipo={fin.falta <= 0.01 ? 'success' : 'warning'}>
-                                                    {fin.falta <= 0.01 ? 'Pagado' : 'Abonado'}
-                                                </Badge>
+                                                {!r.is_active ? (
+                                                    <Badge tipo="danger">Cancelada</Badge>
+                                                ) : (
+                                                    <Badge tipo={fin.falta <= 0.01 ? 'success' : 'warning'}>
+                                                        {fin.falta <= 0.01 ? 'Pagado' : 'Abonado'}
+                                                    </Badge>
+                                                )}
                                             </td>
                                             <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                                                 <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
@@ -341,7 +347,7 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
                                                         </button>
                                                     )}
 
-                                                    {cli?.telefono && (
+                                                    {cli?.telefono && r.is_active && (
                                                         <button
                                                             type="button"
                                                             className="btn btn-ghost"
@@ -353,16 +359,20 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
                                                         </button>
                                                     )}
 
-                                                    {esAdmin && r.is_active && (
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-danger-soft"
-                                                            style={{ padding: '5px 7px' }}
+                                                    {esAdmin && (
+                                                        <BotonBaja
+                                                            activo={r.is_active}
                                                             onClick={() => handleEliminarReserva(r.id_reserva)}
-                                                            title="Dar de baja la reserva"
-                                                        >
-                                                            <Trash size={13} />
-                                                        </button>
+                                                            onRestaurar={async () => {
+                                                                try {
+                                                                    await actualizarReserva(r.id_reserva, { is_active: true });
+                                                                    setExito(`Reserva #${r.id_reserva} reactivada.`);
+                                                                    cargarDatos();
+                                                                } catch (err) {
+                                                                    alert(mensajeError(err, 'No se pudo reactivar la reserva.'));
+                                                                }
+                                                            }}
+                                                        />
                                                     )}
                                                 </div>
                                             </td>
@@ -374,59 +384,6 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
                     </div>
                 )}
             </div>
-
-            {/* MODAL PARA NUEVA RESERVA ASISTIDA (CONDUCE DIRECTAMENTE AL ASISTENTE LINEAL) */}
-            {mostrarModalNuevaReserva && (
-                <div className="modal-backdrop" onClick={() => setMostrarModalNuevaReserva(false)}>
-                    <div className="modal-card fade-in" style={{ maxWidth: 540 }} onClick={(e) => e.stopPropagation()}>
-                        <div className="card-header" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
-                            <div className="card-title">Registro Paso a Paso de Reserva</div>
-                            <button className="btn btn-ghost" onClick={() => setMostrarModalNuevaReserva(false)}>
-                                <X size={18} />
-                            </button>
-                        </div>
-                        <div style={{ padding: '16px 0', fontSize: '0.9rem', color: 'var(--text)' }}>
-                            <p style={{ margin: '0 0 12px' }}>
-                                Para garantizar que los datos del cliente, los acompañantes, los descuentos por edad y los asientos en el croquis queden vinculados correctamente, utiliza el módulo de <strong>Registro de Clientes</strong>.
-                            </p>
-                            <div style={{ background: '#f8fafc', padding: 12, borderRadius: 10, border: '1px solid var(--border)', marginBottom: 16 }}>
-                                <strong>El proceso incluye:</strong>
-                                <ul style={{ margin: '6px 0 0 18px', padding: 0, fontSize: '0.84rem', color: 'var(--muted)' }}>
-                                    <li>Datos y contacto de WhatsApp del cliente titular (+18)</li>
-                                    <li>Selección de viaje con cupos disponibles en vivo</li>
-                                    <li>Acompañantes y menores con cálculo automático de tarifas</li>
-                                    <li>Croquis interactivo de puestos (Bus Cama o Avión)</li>
-                                    <li>Abono inicial de $30 y cálculo en Bs BCV y Pesos COP</li>
-                                </ul>
-                            </div>
-                            <div style={{ display: 'flex', gap: 10 }}>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    style={{ flex: 1, justifyContent: 'center', padding: '10px' }}
-                                    onClick={() => {
-                                        setMostrarModalNuevaReserva(false);
-                                        if (onIrAClientes) {
-                                            onIrAClientes();
-                                        } else {
-                                            window.location.hash = '#clientes';
-                                        }
-                                    }}
-                                >
-                                    Abrir Asistente en Clientes <ArrowRight size={16} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-ghost"
-                                    onClick={() => setMostrarModalNuevaReserva(false)}
-                                >
-                                    Cerrar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* MODAL DE DETALLE COMPLETO DE RESERVA */}
             {reservaDetalle && (

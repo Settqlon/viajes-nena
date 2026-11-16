@@ -95,6 +95,7 @@ export default function App() {
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [seccionActiva, setSeccionActiva] = useState('dashboard');
     const [sidebarColapsado, setSidebarColapsado] = useState(false);
+    const [abrirNuevoEnClientes, setAbrirNuevoEnClientes] = useState(false);
 
     const usuario = token ? leerUsuario(token) : {};
     const rolEfectivo = usuario.rol || 'Vendedor';
@@ -254,6 +255,13 @@ export default function App() {
                         esAdmin={esAdminEfectivo}
                         esOperador={esOperadorEfectivo}
                         esVendedor={esVendedorEfectivo}
+                        onIrAClientes={() => {
+                            setAbrirNuevoEnClientes(true);
+                            setSeccionActiva('clientes');
+                        }}
+                        abrirFormularioInicial={seccion.id === 'clientes' ? abrirNuevoEnClientes : false}
+                        onFormularioInicialAbierto={() => setAbrirNuevoEnClientes(false)}
+                        onNavegar={(idSeccion) => setSeccionActiva(idSeccion)}
                     />
                 </section>
             </div>

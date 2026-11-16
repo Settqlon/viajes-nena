@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-    Printer, MessageCircle, Bus, Plane, Users, CheckCircle2, AlertTriangle, Search,
-    Calendar, MapPin, CheckSquare, Square
+    Printer, MessageCircle, CheckSquare, Square, CreditCard
 } from 'lucide-react';
 import { obtenerIntegrantes } from '../servicios/integrantesServicios';
 import { obtenerReservas } from '../servicios/reservasServicios';
@@ -12,12 +11,23 @@ import { obtenerPaquetes } from '../servicios/paquetesServicios';
 import { obtenerPagos } from '../servicios/pagosServicios';
 import {
     PageHeader, Buscador, Vacio, Badge, formatoFecha, formatoMoneda,
-    BadgeDocumento, TIPOS_DOC_VIAJERO
+    BadgeDocumento, ModalLiquidarSaldo
 } from '../componentes/UI';
 import { calcularTarifaPorEdad, obtenerPrecioBaseViaje } from '../servicios/tarifasServicios';
 import MapaAsientos from '../componentes/MapaAsientos';
 
-export default function Integrantes({ esAdmin = true, esOperador = false, esVendedor = false }) {
+const CLAVE_ASISTENCIAS = 'manifiesto_asistencias_v1';
+
+const leerAsistenciasGuardadas = () => {
+    try {
+        const raw = localStorage.getItem(CLAVE_ASISTENCIAS);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+};
+
+export default function Integrantes() {
     const [integrantes, setIntegrantes] = useState([]);
     const [reservas, setReservas] = useState([]);
     const [clientes, setClientes] = useState([]);
@@ -26,11 +36,13 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
     const [paquetes, setPaquetes] = useState([]);
     const [pagos, setPagos] = useState([]);
     const [error, setError] = useState('');
+    const [exito, setExito] = useState('');
 
     const [idViajeSeleccionado, setIdViajeSeleccionado] = useState('');
     const [busqueda, setBusqueda] = useState('');
-    const [asistencias, setAsistencias] = useState({}); // { [id_integrante]: boolean }
-    const [vistaActiva, setVistaActiva] = useState('lista'); // 'lista' | 'croquis'
+    const [asistencias, setAsistencias] = useState(leerAsistenciasGuardadas);
+    const [vistaActiva, setVistaActiva] = useState('lista');
+    const [reservaParaLiquidarDirecta, setReservaParaLiquidarDirecta] = useState(null);
 
     const cargarDatos = async () => {
         try {
@@ -51,53 +63,66 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
             setPaquetes(pData || []);
             setPagos(pgData || []);
 
-            // Preseleccionar el primer viaje activo si no hay ninguno seleccionado
             if (vData.length > 0 && !idViajeSeleccionado) {
                 const activo = vData.find(v => v.is_active && v.estatus !== 'Cancelado') || vData[0];
                 setIdViajeSeleccionado(String(activo.id_viaje));
             }
-        } catch (err) {
+        } catch {
             setError('Error al obtener la información del manifiesto.');
         }
     };
 
     useEffect(() => { cargarDatos(); }, []);
 
+    const guardarAsistencias = (nuevoMapa) => {
+        setAsistencias(nuevoMapa);
+        try {
+            localStorage.setItem(CLAVE_ASISTENCIAS, JSON.stringify(nuevoMapa));
+        } catch {
+            // Ignorar error de almacenamiento
+        }
+    };
+
     const viajeActual = viajes.find(v => v.id_viaje === Number(idViajeSeleccionado));
     const destinoActual = viajeActual ? destinos.find(d => d.id_destino === viajeActual.id_destino) : null;
-    const paqueteActual = viajeActual?.id_paquete ? paquetes.find(p => p.id_paquete === viajeActual.id_paquete) : null;
 
-    // Reservas activas asociadas a este viaje
     const reservasViajeIds = new Set(
         reservas.filter(r => r.id_viaje === Number(idViajeSeleccionado) && r.is_active).map(r => r.id_reserva)
     );
 
-    // Integrantes activos de este viaje
     const integrantesViaje = integrantes.filter(i => i.is_active && reservasViajeIds.has(i.id_reserva));
 
-    // Capacidad y ocupación
     const esAvion = viajeActual?.metodo_transporte === 'Avión';
     const asientosPorUnidad = esAvion ? 150 : 60;
     const capacidadTotal = asientosPorUnidad * (viajeActual?.cantidad_unidades || 1);
     const puestosOcupados = integrantesViaje.filter(i => i.numero_asiento).length;
+    const totalAbordados = integrantesViaje.filter(i => asistencias[i.id_integrante]).length;
 
-    // Calcular estado financiero de la reserva del integrante
     const obtenerEstadoPagoReserva = (idReserva) => {
         const res = reservas.find(r => r.id_reserva === idReserva);
-        if (!res) return { falta: 0, solvente: true, total: 0 };
+        if (!res) return { reserva: null, falta: 0, solvente: true, total: 0, abonado: 0 };
         const abonado = pagos
             .filter(p => p.id_reserva === idReserva && p.is_active)
             .reduce((s, p) => s + Number(p.monto), 0);
         const total = Number(res.monto_total) || 0;
         const falta = Math.max(total - abonado, 0);
-        return { total, abonado, falta, solvente: falta <= 0.01 };
+        return { reserva: res, total, abonado, falta, solvente: falta <= 0.01 };
     };
 
     const toggleAsistencia = (idIntegrante) => {
-        setAsistencias(prev => ({
-            ...prev,
-            [idIntegrante]: !prev[idIntegrante]
-        }));
+        guardarAsistencias({
+            ...asistencias,
+            [idIntegrante]: !asistencias[idIntegrante]
+        });
+    };
+
+    const toggleTodosViaje = () => {
+        const todosMarcados = integrantesViaje.length > 0 && integrantesViaje.every(i => asistencias[i.id_integrante]);
+        const copia = { ...asistencias };
+        integrantesViaje.forEach(i => {
+            copia[i.id_integrante] = !todosMarcados;
+        });
+        guardarAsistencias(copia);
     };
 
     const imprimirManifiesto = () => {
@@ -111,7 +136,7 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
         texto += `• *Viaje:* #${viajeActual.id_viaje} - ${destinoActual.nombre_destino}\n`;
         texto += `• *Salida:* ${fecha}\n`;
         texto += `• *Transporte:* ${viajeActual.metodo_transporte} (${viajeActual.cantidad_unidades || 1} unidad/es)\n`;
-        texto += `• *Total Pasajeros:* ${integrantesViaje.length} abordando\n\n`;
+        texto += `• *Total Pasajeros:* ${integrantesViaje.length} (${totalAbordados} a bordo)\n\n`;
         texto += `*LISTA DE PASAJEROS POR PUESTO:*\n`;
 
         const ordenados = integrantesViaje
@@ -121,13 +146,13 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
         ordenados.forEach((i) => {
             const puestoStr = i.numero_asiento ? `#${String(i.numero_asiento).padStart(2, '0')}` : 'Sin puesto';
             const estado = obtenerEstadoPagoReserva(i.id_reserva);
-            texto += `💺 ${puestoStr} | ${i.nombre} ${i.apellido} (${i.documento_id || 'MENOR'}) - ${i.edad} años ${estado.solvente ? '✓ Solvente' : `⚠️ Debe $${estado.falta.toFixed(2)}`}\n`;
+            const check = asistencias[i.id_integrante] ? '✅' : '⬜';
+            texto += `${check} 💺 ${puestoStr} | ${i.nombre} ${i.apellido} (${i.documento_id || 'MENOR'}) - ${i.edad} años ${estado.solvente ? '✓ Solvente' : `⚠️ Debe $${estado.falta.toFixed(2)}`}\n`;
         });
 
         window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
     };
 
-    // Filtrado de la lista por nombre, documento o asiento
     const q = busqueda.trim().toLowerCase();
     const filtrados = integrantesViaje
         .slice()
@@ -144,14 +169,14 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                 titulo="Manifiesto de Abordaje y Pasajeros"
                 subtitulo="Lista oficial por viaje ordenada por número de puesto para choferes, guías y control de ruta"
             >
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="no-print" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                     <button
                         type="button"
                         className="btn btn-ghost"
                         onClick={compartirManifiestoWhatsApp}
                         style={{ color: '#16a34a', borderColor: '#86efac', fontWeight: 700 }}
                     >
-                        <MessageCircle size={16} /> Compartir Manifiesto WhatsApp
+                        <MessageCircle size={16} /> Compartir WhatsApp
                     </button>
                     <button
                         type="button"
@@ -164,13 +189,13 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
             </PageHeader>
 
             {error && <div className="alert alert-error">{error}</div>}
+            {exito && <div className="alert alert-success">{exito}</div>}
 
-            {/* SELECTOR DESTACADO DE VIAJE */}
             <div className="card" style={{ marginBottom: 18, padding: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
                     <div style={{ flex: 1, minWidth: 260 }}>
                         <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0f172a', marginBottom: 6, display: 'block' }}>
-                            Selecciona el Viaje para Generar el Manifiesto de Abordaje:
+                            Viaje del Manifiesto de Abordaje:
                         </label>
                         <select
                             value={idViajeSeleccionado}
@@ -198,9 +223,16 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                             </div>
 
                             <div style={{ padding: '8px 14px', background: '#f8fafc', borderRadius: 10, border: '1px solid var(--border)' }}>
-                                <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700 }}>OCUPACIÓN DEL VEHÍCULO</div>
+                                <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 700 }}>OCUPACIÓN</div>
                                 <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem' }}>
-                                    {puestosOcupados} de {capacidadTotal} asientos ({((puestosOcupados / (capacidadTotal || 1)) * 100).toFixed(0)}%)
+                                    {puestosOcupados} / {capacidadTotal} asientos ({((puestosOcupados / (capacidadTotal || 1)) * 100).toFixed(0)}%)
+                                </div>
+                            </div>
+
+                            <div style={{ padding: '8px 14px', background: '#f0fdf4', borderRadius: 10, border: '1px solid #86efac' }}>
+                                <div style={{ fontSize: '0.72rem', color: '#15803d', fontWeight: 700 }}>A BORDO</div>
+                                <div style={{ fontWeight: 800, color: '#15803d', fontSize: '0.95rem' }}>
+                                    {totalAbordados} / {integrantesViaje.length} pasajeros
                                 </div>
                             </div>
                         </div>
@@ -208,9 +240,8 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                 </div>
             </div>
 
-            {/* BARRA DE PESTAÑAS (LISTA VS CROQUIS) Y BUSCADOR */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
-                <div style={{ display: 'flex', gap: 8 }}>
+            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button
                         type="button"
                         className={`btn ${vistaActiva === 'lista' ? 'btn-primary' : 'btn-ghost'}`}
@@ -225,6 +256,16 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                     >
                         💺 Croquis y Asientos del Transporte
                     </button>
+                    {vistaActiva === 'lista' && integrantesViaje.length > 0 && (
+                        <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={toggleTodosViaje}
+                            style={{ fontSize: '0.8rem' }}
+                        >
+                            {integrantesViaje.every(i => asistencias[i.id_integrante]) ? 'Desmarcar todos' : '✓ Marcar todos a bordo'}
+                        </button>
+                    )}
                 </div>
 
                 {vistaActiva === 'lista' && (
@@ -236,7 +277,6 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                 )}
             </div>
 
-            {/* VISTA 1: LISTA OFICIAL DE ABORDAJE (ORDENADA POR PUESTO) */}
             {vistaActiva === 'lista' && (
                 <div className="card">
                     {filtrados.length === 0 ? (
@@ -271,7 +311,6 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                                                 key={item.id_integrante}
                                                 style={{ background: abordado ? '#f0fdf4' : 'transparent', transition: 'background 0.15s' }}
                                             >
-                                                {/* Checkbox de Abordaje */}
                                                 <td style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => toggleAsistencia(item.id_integrante)}>
                                                     {abordado ? (
                                                         <CheckSquare size={18} color="#16a34a" />
@@ -280,7 +319,6 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                                                     )}
                                                 </td>
 
-                                                {/* Número de Puesto */}
                                                 <td>
                                                     <span style={{
                                                         display: 'inline-flex',
@@ -297,7 +335,6 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                                                     </span>
                                                 </td>
 
-                                                {/* Nombre */}
                                                 <td>
                                                     <div className="cell-main" style={{ fontWeight: 700 }}>
                                                         {item.nombre} {item.apellido}
@@ -309,22 +346,18 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                                                     )}
                                                 </td>
 
-                                                {/* Documento */}
                                                 <td>
                                                     <BadgeDocumento doc={item.documento_id} tipo={item.tipo_documento} />
                                                 </td>
 
-                                                {/* Edad */}
                                                 <td>
                                                     <strong>{item.edad}</strong> años
                                                 </td>
 
-                                                {/* Tarifa */}
                                                 <td>
                                                     <Badge tipo={tarifa.tipo}>{tarifa.etiqueta}</Badge>
                                                 </td>
 
-                                                {/* Teléfono */}
                                                 <td>
                                                     {titular?.telefono ? (
                                                         <a
@@ -340,14 +373,32 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                                                     )}
                                                 </td>
 
-                                                {/* Estado de pago de la reserva */}
                                                 <td>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                                                         <Badge tipo="neutral">#{item.id_reserva}</Badge>
                                                         {estadoPago.solvente ? (
                                                             <Badge tipo="success">Solvente</Badge>
                                                         ) : (
-                                                            <Badge tipo="warning">Debe {formatoMoneda(estadoPago.falta)}</Badge>
+                                                            <>
+                                                                <Badge tipo="warning">Debe {formatoMoneda(estadoPago.falta)}</Badge>
+                                                                {estadoPago.reserva && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-primary no-print"
+                                                                        style={{ padding: '2px 7px', fontSize: '0.72rem' }}
+                                                                        onClick={() => setReservaParaLiquidarDirecta({
+                                                                            reserva: estadoPago.reserva,
+                                                                            id_reserva: item.id_reserva,
+                                                                            id_cliente: estadoPago.reserva.id_cliente,
+                                                                            total: estadoPago.total,
+                                                                            abonado: estadoPago.abonado,
+                                                                            falta: estadoPago.falta
+                                                                        })}
+                                                                    >
+                                                                        <CreditCard size={11} /> Cobrar
+                                                                    </button>
+                                                                )}
+                                                            </>
                                                         )}
                                                     </div>
                                                 </td>
@@ -361,7 +412,6 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                 </div>
             )}
 
-            {/* VISTA 2: CROQUIS DE ASIENTOS Y OCUPACIÓN EN EL TRANSPORTE */}
             {vistaActiva === 'croquis' && viajeActual && (
                 <div className="card fade-in">
                     <div className="card-header">
@@ -377,6 +427,16 @@ export default function Integrantes({ esAdmin = true, esOperador = false, esVend
                     />
                 </div>
             )}
+
+            <ModalLiquidarSaldo
+                infoReserva={reservaParaLiquidarDirecta}
+                abierto={!!reservaParaLiquidarDirecta}
+                onCerrar={() => setReservaParaLiquidarDirecta(null)}
+                onLiquidado={() => {
+                    setExito('¡Saldo de la reserva liquidado!');
+                    cargarDatos();
+                }}
+            />
         </div>
     );
 }

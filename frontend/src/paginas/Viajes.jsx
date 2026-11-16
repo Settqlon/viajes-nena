@@ -304,7 +304,7 @@ export default function Viajes({ esAdmin = true, esOperador = false, esVendedor 
                             </button>
                         ) : (
                             <button className="btn btn-primary" onClick={() => { setPasoViaje(1); setMostrarForm(true); }}>
-                                <Plus size={16} /> + Programar Viaje
+                                <Plus size={16} /> Programar Viaje
                             </button>
                         )
                     )}
