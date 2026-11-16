@@ -2,12 +2,15 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.4
--- Dumped by pg_dump version 16.4
+\restrict A0VUpAnKtlqfXGY2YCM525iSfg2Zw5U11MPMwgVOfwmMd2lbFhZYQSBeTztaEc4
+
+-- Dumped from database version 18.6
+-- Dumped by pg_dump version 18.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -654,6 +657,13 @@ COPY public.auditoria (id_auditoria, tabla_afectada, accion, id_usuario, detalle
 33	integrantes	UPDATE	1	Actualización de Integrante #9 (Miguel González, Activo: True) en Reserva #4	2026-11-03 14:04:23.355111	t
 34	integrantes	UPDATE	1	Actualización de Integrante #10 (Fernando Rodríguez, Activo: True) en Reserva #4	2026-11-03 14:04:40.39317	t
 35	integrantes	UPDATE	1	Actualización de Integrante #10 (Fernando Rodríguez, Activo: True) en Reserva #4	2026-11-03 14:04:44.305191	t
+36	tasas	UPDATE	1	Tasas actualizadas — BCV: 891.11 Bs/$ | COP: 3,183.0 COP/$	2026-11-15 22:28:39.413385	t
+37	costos_viaje	INSERT	1	Costo operativo registrado en Viaje #1: QA Test Combustible ($45.5)	2026-11-15 23:14:28.604024	t
+38	costos_viaje	UPDATE	1	Actualización de costo #43 en Viaje #1: QA Test Combustible Editado ($50.0)	2026-11-15 23:14:28.740579	t
+39	costos_viaje	DELETE	1	Baja lógica de costo #43 en Viaje #1	2026-11-15 23:14:28.864503	t
+40	inconvenientes	INSERT	1	Inconveniente reportado en Viaje #1: QA Test Incidente (-$15.0)	2026-11-15 23:14:29.00886	t
+41	inconvenientes	UPDATE	1	Actualización de inconveniente #5 en Viaje #1: QA Test Incidente Editado	2026-11-15 23:14:29.141672	t
+42	inconvenientes	DELETE	1	Baja lógica de inconveniente #5 en Viaje #1	2026-11-15 23:14:29.26702	t
 \.
 
 
@@ -745,6 +755,7 @@ COPY public.costos_viaje (id_costo, id_viaje, descripcion, monto, is_active) FRO
 41	14	Seguro de viaje	236	t
 42	14	Guía turístico	404	t
 1	1	Alimentación	150	t
+43	1	QA Test Combustible Editado	50.0	f
 \.
 
 
@@ -773,13 +784,13 @@ COPY public.ganancias (id_ganancia, id_viaje, ingresos_totales, costos_totales, 
 12	12	5120.00	1339	147	3634.00	2026-11-03 00:20:04.212133	t
 3	3	2090	1747	0	343	2026-11-03 00:20:04.556875	t
 7	7	3440.00	1361	0	2079.00	2026-11-03 14:03:05.593264	t
-1	1	8712.50	1054.00	251.00	7407.50	2026-11-03 14:04:44.289191	t
 2	2	10455.00	1429	211	8815.00	2026-11-03 00:20:02.221851	t
 4	4	14687.50	1355	0	13332.50	2026-11-03 00:20:02.490115	t
 5	5	2040.00	1505	0	535.00	2026-11-03 00:20:02.624254	t
 6	6	9567.50	1848	0	7719.50	2026-11-03 00:20:02.789084	t
 8	8	3080.00	1321	0	1759.00	2026-11-03 00:20:03.097429	t
 9	9	3900.00	1177	0	2723.00	2026-11-03 00:20:03.301883	t
+1	1	8712.50	1054.00	251.00	7407.50	2026-11-15 23:14:29.242827	t
 \.
 
 
@@ -792,6 +803,7 @@ COPY public.inconvenientes (id_inconveniente, id_viaje, descripcion, monto_desco
 3	11	Mal clima	103	2026-11-02 19:51:32.689733	t
 4	12	Cambio de hotel	147	2026-11-02 19:51:32.911069	t
 1	1	Mal clima	251	2026-11-02 19:51:30.514244	t
+5	1	QA Test Incidente Editado	20.0	2026-11-15 23:14:28.919464	f
 \.
 
 
@@ -1303,18 +1315,18 @@ COPY public.usuarios (id_usuario, nombre, correo_electronico, contrasena, rol, e
 COPY public.viajes (id_viaje, id_destino, id_paquete, fecha_salida, fecha_retorno, cupos_disponibles, estatus, is_active, metodo_transporte, cantidad_unidades) FROM stdin;
 2	3	4	2026-04-03	2026-04-06	33	Finalizado	t	Bus Cama	1
 5	5	6	2026-05-31	2026-06-02	51	Finalizado	t	Bus Cama	1
-9	5	6	2026-08-22	2026-08-24	43	Finalizado	t	Bus Cama	1
-11	3	4	2026-09-30	2026-10-03	29	Finalizado	t	Bus Cama	1
-4	4	5	2026-05-14	2026-05-18	138	Finalizado	t	Avión	1
 6	1	2	2026-06-17	2026-06-20	139	Finalizado	t	Avión	1
 7	1	1	2026-07-09	2026-07-10	139	Finalizado	t	Avión	1
-8	2	3	2026-07-26	2026-07-30	144	Finalizado	t	Avión	1
 10	1	1	2026-09-05	2026-09-06	130	Finalizado	t	Avión	1
 12	1	1	2026-10-18	2026-10-19	134	Finalizado	t	Avión	1
 14	1	1	2026-11-29	2026-11-30	136	Programado	t	Avión	1
-3	6	7	2026-04-16	2026-04-18	49	Finalizado	t	Bus Cama	1
 1	3	4	2026-03-13	2026-03-16	38	Finalizado	t	Bus Cama	1
-13	1	2	2026-11-05	2026-11-08	128	Programado	t	Avión	1
+3	6	7	2026-11-21	2026-11-23	49	Programado	t	Bus Cama	1
+9	5	6	2026-11-27	2026-11-29	43	Programado	t	Bus Cama	1
+11	3	4	2026-12-04	2026-12-07	29	Programado	t	Bus Cama	1
+8	2	3	2026-12-11	2026-12-15	144	Programado	t	Avión	1
+13	1	2	2026-12-18	2026-12-21	128	Programado	t	Avión	1
+4	4	5	2026-12-26	2026-12-30	138	Programado	t	Avión	1
 \.
 
 
@@ -1322,14 +1334,14 @@ COPY public.viajes (id_viaje, id_destino, id_paquete, fecha_salida, fecha_retorn
 -- Name: auditoria_id_auditoria_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.auditoria_id_auditoria_seq', 35, true);
+SELECT pg_catalog.setval('public.auditoria_id_auditoria_seq', 42, true);
 
 
 --
 -- Name: costos_viaje_id_costo_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.costos_viaje_id_costo_seq', 42, true);
+SELECT pg_catalog.setval('public.costos_viaje_id_costo_seq', 43, true);
 
 
 --
@@ -1350,7 +1362,7 @@ SELECT pg_catalog.setval('public.ganancias_id_ganancia_seq', 12, true);
 -- Name: inconvenientes_id_inconveniente_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.inconvenientes_id_inconveniente_seq', 4, true);
+SELECT pg_catalog.setval('public.inconvenientes_id_inconveniente_seq', 5, true);
 
 
 --
@@ -1634,4 +1646,6 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict A0VUpAnKtlqfXGY2YCM525iSfg2Zw5U11MPMwgVOfwmMd2lbFhZYQSBeTztaEc4
 

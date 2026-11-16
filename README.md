@@ -230,6 +230,10 @@ El sistema cuenta con control de acceso basado en roles (**RBAC**):
    * `Usuarios y Roles`: Alta, baja lógica y asignación de roles.
    * `Procesos`: Control de flujos operativos y seguimiento de procesos internos.
    * `Auditoría`: Trazabilidad inmutable de todas las acciones realizadas en la base de datos.
+6. **Asesor Comercial IA & Cotizador por Presupuesto (`Nena AI`)**:
+   * **Chat Asesor en Lenguaje Natural:** Permite escribir el presupuesto y composición familiar de un cliente (ej. *"Cliente con $600 para 2 adultos y 1 niño"*) o consultar una cédula en vivo.
+   * **Pestaña Interactiva `💰 Cotizador`:** Calcula precios con descuento de niños (-25% de 3 a 12 años) e infantes gratis (<3 años), convierte a Bolívares (BCV) y Pesos (COP), clasifica los viajes que cubre 100% de contado o con abono mínimo de \$30/persona y permite saltar en 1 clic a reservar.
+   * **Menú Lateral Colapsable e Impresión Limpia:** Menú retráctil (260px ↔ 72px) con expansión automática de vistas y hoja limpia `@media print` para manifiestos de abordaje.
 
 ---
 
@@ -252,12 +256,20 @@ Si otro programa está usando el puerto:
 * Para cambiar el puerto del backend: `uvicorn main:app --port 8080 --reload` (y actualiza la URL en `frontend/src/servicios/api.js`).
 * Para el frontend, Vite ofrecerá automáticamente el siguiente puerto libre (ejemplo: `http://localhost:5174`).
 
-### 4. Error al instalar `psycopg2-binary` en Linux
-En distribuciones basadas en Debian/Ubuntu, instala las librerías de desarrollo de PostgreSQL antes del `pip install`:
-```bash
-sudo apt-get update
-sudo apt-get install python3-dev libpq-dev
-```
+### 4. Instalación rápida de PostgreSQL en Linux (Arch / CachyOS / Ubuntu)
+* **En Arch Linux / CachyOS:**
+  ```bash
+  sudo pacman -S postgresql --noconfirm
+  sudo -u postgres initdb -D /var/lib/postgres/data
+  sudo systemctl enable --now postgresql
+  sudo -u postgres psql -c "CREATE USER postgres WITH PASSWORD '12348765' SUPERUSER;"
+  sudo -u postgres createdb -O postgres viajes_lanena
+  sudo -u postgres psql -d viajes_lanena -f database/backup_inicial.sql
+  ```
+* **En Debian / Ubuntu:**
+  ```bash
+  sudo apt-get update && sudo apt-get install -y postgresql python3-dev libpq-dev
+  ```
 
 ---
 
