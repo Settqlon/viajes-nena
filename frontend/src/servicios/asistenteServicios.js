@@ -10,6 +10,11 @@ export const enviarMensajeAsistente = async (datos) => {
     return res.data;
 };
 
+export const cotizarPorPresupuesto = async (datos) => {
+    const res = await api.post('/asistente/cotizar', datos);
+    return res.data;
+};
+
 export const configurarApiKeyIA = async (api_key) => {
     const res = await api.post('/asistente/configurar-key', { api_key });
     return res.data;

@@ -1,49 +1,60 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bot, X, Send, Sparkles, Lightbulb, HelpCircle, KeyRound, CheckCircle2 } from 'lucide-react';
-import { obtenerRecomendacionesIA, enviarMensajeAsistente, configurarApiKeyIA } from '../servicios/asistenteServicios';
+import {
+    Bot, X, Send, Sparkles, Lightbulb, HelpCircle, KeyRound, CheckCircle2,
+    Calculator, Calendar, Users, DollarSign, ArrowRight
+} from 'lucide-react';
+import {
+    obtenerRecomendacionesIA,
+    enviarMensajeAsistente,
+    cotizarPorPresupuesto,
+    configurarApiKeyIA
+} from '../servicios/asistenteServicios';
 
 const AYUDA_POR_SECCION = {
-    dashboard: 'Estás en Estadísticas: aquí ves KPIs, viaje más vendido, ocupación real (Bus Cama 60 / Avión 150) y rentabilidad.',
-    catalogo: 'Estás en Catálogo Turístico: administra los destinos y sus paquetes promocionales en un solo lugar.',
-    destinos: 'Estás en Destinos: gestiona los lugares turísticos y su tarifa base por viajero.',
-    paquetes: 'Estás en Paquetes: configura días, noches y precio fijo por persona para cada destino.',
-    viajes: 'Estás en Viajes: elige Bus Cama (60 asientos) o Avión (150 asientos) y la cantidad de unidades para calcular los cupos solos.',
-    clientes: 'Estás en Clientes: documento, teléfono y correo son únicos. Puedes registrar al cliente y asignarle su viaje paso a paso.',
-    reservas: 'Estás en Reservas: abono mínimo de $30.00 por viajero. Toca cualquier fila para ver el detalle, liquidar saldo o enviar por WhatsApp.',
-    integrantes: 'Estás en Manifiesto de Abordaje: filtra por viaje, marca pasajeros a bordo y pulsa "Imprimir Manifiesto".',
-    pagos: 'Estás en Pagos: registra abonos o liquidaciones; al cubrir el monto total, la reserva pasa automáticamente a Pagado.',
-    'control-financiero': 'Estás en Control Financiero: supervisa ingresos por reservas, costos operativos, inconvenientes en ruta y la ganancia neta real.',
-    costos: 'Estás en Costos de Viaje: cada gasto operativo actualiza automáticamente el balance de Ganancias del viaje.',
-    inconvenientes: 'Estás en Inconvenientes: cada descuento registrado ajusta en tiempo real la Ganancia Neta del viaje.',
-    ganancias: 'Estás en Ganancias: el balance se sincroniza automáticamente con las reservas, costos e inconvenientes de cada viaje.',
-    procesos: 'Estás en Procesos Operativos: cada viaje programado genera automáticamente su proceso logístico de unidades y embarque.',
-    usuarios: 'Estás en Usuarios: administra cuentas y roles del personal de la agencia.',
-    auditoria: 'Estás en Auditoría: bitácora automática de todas las creaciones, ediciones y bajas lógicas del sistema.'
+    dashboard: 'Estás en Estadísticas: consulta KPIs, semáforo de próximas salidas y rentabilidad.',
+    catalogo: 'Estás en Catálogo Turístico: administra los destinos y sus paquetes promocionales.',
+    viajes: 'Estás en Viajes Programados: gestiona fechas de salida, transporte (Bus Cama 60 / Avión 150) y cupos.',
+    clientes: 'Estás en Clientes: registra al titular, acompañantes, asientos y abono en un flujo paso a paso.',
+    reservas: 'Estás en Reservas: filtra por saldo pendiente, liquida en 1 clic o envía comprobantes por WhatsApp.',
+    integrantes: 'Estás en Manifiesto de Abordaje: marca pasajeros a bordo, cobra saldos pendientes e imprime la lista.',
+    pagos: 'Estás en Pagos: registra cobros multidivisa (USD, Bs BCV, COP) y liquida reservas.',
+    'control-financiero': 'Estás en Control Financiero: audita ingresos, costos operativos, incidentes y ganancia neta.',
+    procesos: 'Estás en Procesos Operativos: seguimiento logístico sincronizado con cada viaje.',
+    usuarios: 'Estás en Usuarios y Roles: administra las cuentas y permisos del personal.',
+    auditoria: 'Estás en Auditoría: bitácora inmutable de operaciones del sistema.'
 };
 
 const PREGUNTAS_RAPIDAS = [
-    '💡 Dame recomendaciones para mejorar ventas y cobranzas',
-    '🚌 ¿Cuántos cupos quedan en los viajes programados?',
-    '📋 ¿Cómo funciona la ley de los $30 de abono e integrantes?',
-    '📊 ¿Cuál es el viaje más vendido y el resumen financiero?',
-    '🔄 ¿Cómo edito o restauro un registro dado de baja?'
+    '💰 Cliente con presupuesto de $250 para 1 adulto, ¿qué viajes le convienen?',
+    '👨‍👩‍👧 Pareja con 1 niño y $450 de presupuesto, ¿qué paquetes alcanzan?',
+    '🌴 ¿Cuáles son los paquetes más económicos y sus fechas de salida?',
+    '📊 Dame el balance financiero y cuánto falta por cobrar hoy'
 ];
 
-export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
+export default function AsistenteIA({ seccionActiva = 'dashboard', onNavegar, onIrAClientes }) {
     const [abierto, setAbierto] = useState(false);
-    const [tab, setTab] = useState('chat'); // 'chat' | 'recomendaciones' | 'config'
+    const [tab, setTab] = useState('chat'); // 'chat' | 'cotizador' | 'recomendaciones' | 'config'
     const [recomendaciones, setRecomendaciones] = useState([]);
     const [apiKeyActiva, setApiKeyActiva] = useState(false);
     const [apiKeyInput, setApiKeyInput] = useState('');
     const [guardandoKey, setGuardandoKey] = useState(false);
     const [interactionId, setInteractionId] = useState(null);
-    const [modoActual, setModoActual] = useState('motor-local-bd');
     const [input, setInput] = useState('');
     const [cargando, setCargando] = useState(false);
+
+    // Estado del Cotizador Interactivo por Presupuesto
+    const [presupuesto, setPresupuesto] = useState('300');
+    const [adultos, setAdultos] = useState(2);
+    const [ninos, setNinos] = useState(0);
+    const [infantes, setInfantes] = useState(0);
+    const [filtroTexto, setFiltroTexto] = useState('');
+    const [resultadoCotizacion, setResultadoCotizacion] = useState(null);
+    const [cargandoCotizacion, setCargandoCotizacion] = useState(false);
+
     const [mensajes, setMensajes] = useState([
         {
             rol: 'asistente',
-            texto: '¡Hola! Soy **Nena AI**, tu asistente inteligente de **Viajes La Nena**. Tengo acceso en tiempo real a los viajes, cupos, reservas y estadísticas del sistema. ¿En qué te ayudo hoy o qué recomendación deseas revisar?'
+            texto: '¡Hola! Soy **Nena AI**, tu asesor comercial y operativo.\n\n• **Cotiza por presupuesto:** Escríbeme por ejemplo *"Cliente con $350 para 2 adultos y 1 niño"* o usa la pestaña **💰 Cotizador**.\n• **Busca clientes:** Escribe una cédula (ej. `V-14523890`) para ver sus reservas y saldo.'
         }
     ]);
 
@@ -55,13 +66,39 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
             setRecomendaciones(data.recomendaciones || []);
             setApiKeyActiva(Boolean(data.api_key_configurada));
         } catch {
-            // Silencioso si aún no carga
+            // Silencioso
+        }
+    };
+
+    const ejecutarCotizacion = async (e) => {
+        if (e) e.preventDefault();
+        const monto = parseFloat(presupuesto);
+        if (!monto || monto <= 0) return;
+        setCargandoCotizacion(true);
+        try {
+            const data = await cotizarPorPresupuesto({
+                presupuesto: monto,
+                adultos: Number(adultos) || 1,
+                ninos: Number(ninos) || 0,
+                infantes: Number(infantes) || 0,
+                filtro_texto: filtroTexto.trim()
+            });
+            setResultadoCotizacion(data);
+        } catch {
+            // Error silencioso
+        } finally {
+            setCargandoCotizacion(false);
         }
     };
 
     useEffect(() => {
-        if (abierto) cargarRecomendaciones();
-    }, [abierto, seccionActiva]);
+        if (abierto) {
+            cargarRecomendaciones();
+            if (tab === 'cotizador' && !resultadoCotizacion) {
+                ejecutarCotizacion();
+            }
+        }
+    }, [abierto, seccionActiva, tab]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -84,7 +121,6 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                 previous_interaction_id: interactionId
             });
             if (res.interaction_id) setInteractionId(res.interaction_id);
-            if (res.modo) setModoActual(res.modo);
             if (typeof res.api_key_configurada === 'boolean') setApiKeyActiva(res.api_key_configurada);
 
             setMensajes(prev => [
@@ -101,7 +137,7 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
         }
     };
 
-    const handleGuardarKey = async (e) => {
+    const handleGuardarApiKey = async (e) => {
         e.preventDefault();
         setGuardandoKey(true);
         try {
@@ -114,8 +150,8 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                 {
                     rol: 'asistente',
                     texto: res.api_key_configurada
-                        ? '✅ **API Key de Google Gemini configurada correctamente (`gemini-3.8-flash`)**. Ahora responderé usando la nube de Gemini combinada con los datos en vivo de tu base de datos PostgreSQL.'
-                        : 'ℹ️ Se activó el **Motor Inteligente Local conectado a PostgreSQL**.'
+                        ? '✅ **API Key configurada correctamente**. Ahora combino Gemini con el motor cotizador en vivo de PostgreSQL.'
+                        : 'ℹ️ **Usando Motor Cotizador Local conectado a PostgreSQL**.'
                 }
             ]);
         } finally {
@@ -123,17 +159,32 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
         }
     };
 
-    const renderTextoFormateado = (texto = '') => {
+    const renderTexto = (texto) => {
         return texto.split('\n').map((linea, idx) => {
-            const partes = linea.split(/(\*\*.*?\*\*)/g).map((seg, i) => {
-                if (seg.startsWith('**') && seg.endsWith('**')) {
-                    return <strong key={i}>{seg.slice(2, -2)}</strong>;
-                }
-                return seg;
-            });
+            const partes = linea.split(/(\*\*.*?\*\*|`.*?`)/g);
             return (
-                <div key={idx} style={{ minHeight: linea.trim() ? 'auto' : 8, marginBottom: 3 }}>
-                    {partes}
+                <div key={idx} style={{ minHeight: linea.trim() === '' ? 6 : 'auto', marginBottom: 3 }}>
+                    {partes.map((p, i) => {
+                        if (p.startsWith('**') && p.endsWith('**')) {
+                            return <strong key={i}>{p.slice(2, -2)}</strong>;
+                        }
+                        if (p.startsWith('`') && p.endsWith('`')) {
+                            return (
+                                <code
+                                    key={i}
+                                    style={{
+                                        background: 'rgba(15, 23, 42, 0.08)',
+                                        padding: '1px 5px',
+                                        borderRadius: 4,
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    {p.slice(1, -1)}
+                                </code>
+                            );
+                        }
+                        return <span key={i}>{p}</span>;
+                    })}
                 </div>
             );
         });
@@ -141,116 +192,131 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
 
     return (
         <>
-            {/* Botón Flotante Principal */}
             <button
                 type="button"
                 onClick={() => setAbierto(!abierto)}
-                title="Asistente IA y Recomendaciones"
+                className="no-print"
+                title="Asesor IA y Cotizador por Presupuesto"
                 style={{
                     position: 'fixed',
                     right: 24,
                     bottom: 24,
-                    zIndex: 1100,
-                    display: 'inline-flex',
+                    zIndex: 999,
+                    display: 'flex',
                     alignItems: 'center',
                     gap: 10,
-                    padding: '13px 18px',
+                    padding: '12px 18px',
                     borderRadius: 999,
                     border: 'none',
                     cursor: 'pointer',
-                    background: 'linear-gradient(135deg, #0ea5a4 0%, #6366f1 100%)',
                     color: '#fff',
                     fontWeight: 700,
                     fontSize: '0.9rem',
-                    boxShadow: '0 14px 32px rgba(14, 165, 164, 0.38)'
+                    background: 'linear-gradient(135deg, #0ea5a4 0%, #6366f1 100%)',
+                    boxShadow: '0 12px 28px rgba(14, 165, 164, 0.38)',
+                    transition: 'transform 0.18s ease'
                 }}
             >
                 <Sparkles size={18} />
-                <span>{abierto ? 'Cerrar Nena AI' : 'Asistente IA & Recomendaciones'}</span>
+                <span>{abierto ? 'Cerrar Asesor IA' : 'Asesor IA & Cotizador'}</span>
+                {recomendaciones.length > 0 && !abierto && (
+                    <span
+                        style={{
+                            background: '#f97316',
+                            color: '#fff',
+                            borderRadius: 999,
+                            padding: '1px 7px',
+                            fontSize: '0.72rem',
+                            fontWeight: 800
+                        }}
+                    >
+                        {recomendaciones.length}
+                    </span>
+                )}
             </button>
 
-            {/* Panel Flotante del Asistente */}
             {abierto && (
                 <div
-                    className="fade-in"
+                    className="no-print"
                     style={{
                         position: 'fixed',
                         right: 24,
-                        bottom: 84,
-                        width: 420,
+                        bottom: 82,
+                        width: 440,
                         maxWidth: 'calc(100vw - 32px)',
-                        height: 600,
-                        maxHeight: 'calc(100vh - 120px)',
+                        height: 610,
+                        maxHeight: 'calc(100vh - 110px)',
                         background: '#ffffff',
                         borderRadius: 18,
                         border: '1px solid var(--border)',
-                        boxShadow: '0 24px 60px rgba(15, 23, 42, 0.22)',
+                        boxShadow: '0 22px 50px rgba(15, 27, 45, 0.22)',
+                        zIndex: 999,
                         display: 'flex',
                         flexDirection: 'column',
-                        overflow: 'hidden',
-                        zIndex: 1100
+                        overflow: 'hidden'
                     }}
                 >
                     {/* Cabecera */}
                     <div
                         style={{
-                            padding: '14px 16px',
-                            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                            padding: '13px 16px',
+                            background: 'linear-gradient(135deg, #0f1b2d 0%, #1e293b 100%)',
                             color: '#fff',
                             display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <div
                                 style={{
-                                    width: 36,
-                                    height: 36,
+                                    width: 34,
+                                    height: 34,
                                     borderRadius: 10,
                                     background: 'linear-gradient(135deg, #0ea5a4, #6366f1)',
                                     display: 'grid',
                                     placeItems: 'center'
                                 }}
                             >
-                                <Bot size={20} color="#fff" />
+                                <Bot size={19} color="#fff" />
                             </div>
                             <div>
-                                <div style={{ fontWeight: 800, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    Nena AI
+                                <div style={{ fontWeight: 800, fontSize: '0.93rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    Nena AI — Asesor Comercial
                                     <span
                                         style={{
-                                            fontSize: '0.68rem',
-                                            padding: '2px 7px',
-                                            borderRadius: 99,
-                                            background: apiKeyActiva ? 'rgba(34,197,94,0.22)' : 'rgba(14,165,164,0.25)',
-                                            color: apiKeyActiva ? '#86efac' : '#5eead4'
+                                            fontSize: '0.65rem',
+                                            padding: '2px 6px',
+                                            borderRadius: 999,
+                                            background: 'rgba(34, 197, 94, 0.22)',
+                                            color: '#86efac',
+                                            fontWeight: 700
                                         }}
                                     >
-                                        {apiKeyActiva ? 'Gemini 3.8 Flash' : 'Conectado a BD'}
+                                        En vivo con BD
                                     </span>
                                 </div>
-                                <div style={{ fontSize: '0.74rem', color: '#94a3b8' }}>
-                                    Recomendaciones en vivo y ayuda del sistema
+                                <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                                    Cotizador por presupuesto, fechas, paquetes y clientes
                                 </div>
                             </div>
                         </div>
                         <button
                             type="button"
                             onClick={() => setAbierto(false)}
-                            style={{ background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: 4 }}
+                            style={{ background: 'transparent', border: 'none', color: '#cbd5e1', cursor: 'pointer' }}
                         >
                             <X size={18} />
                         </button>
                     </div>
 
-                    {/* Cinta de ayuda contextual de la pantalla actual */}
+                    {/* Ayuda contextual de la sección actual */}
                     <div
                         style={{
-                            padding: '8px 14px',
+                            padding: '7px 14px',
                             background: '#f0fdfa',
                             borderBottom: '1px solid #ccfbf1',
-                            fontSize: '0.76rem',
+                            fontSize: '0.75rem',
                             color: '#0f766e',
                             display: 'flex',
                             alignItems: 'center',
@@ -261,53 +327,52 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                         <span>{AYUDA_POR_SECCION[seccionActiva] || AYUDA_POR_SECCION.dashboard}</span>
                     </div>
 
-                    {/* Pestañas: Chat / Recomendaciones / API Key */}
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr auto',
-                            gap: 6,
-                            padding: '8px 12px',
-                            background: '#f8fafc',
-                            borderBottom: '1px solid var(--border)'
-                        }}
-                    >
+                    {/* Pestañas */}
+                    <div style={{ display: 'flex', gap: 4, padding: '8px 10px', borderBottom: '1px solid var(--border)', background: '#f8fafc' }}>
                         <button
                             type="button"
                             className={`viaje-pill ${tab === 'chat' ? 'active' : ''}`}
                             onClick={() => setTab('chat')}
-                            style={{ justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                            style={{ flex: 1, justifyContent: 'center', padding: '5px 8px', fontSize: '0.76rem' }}
                         >
-                            <Bot size={13} /> Chat de Ayuda
+                            💬 Chat Asesor
+                        </button>
+                        <button
+                            type="button"
+                            className={`viaje-pill ${tab === 'cotizador' ? 'active' : ''}`}
+                            onClick={() => setTab('cotizador')}
+                            style={{ flex: 1, justifyContent: 'center', padding: '5px 8px', fontSize: '0.76rem' }}
+                        >
+                            💰 Cotizador
                         </button>
                         <button
                             type="button"
                             className={`viaje-pill ${tab === 'recomendaciones' ? 'active' : ''}`}
                             onClick={() => setTab('recomendaciones')}
-                            style={{ justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                            style={{ flex: 1, justifyContent: 'center', padding: '5px 8px', fontSize: '0.76rem' }}
                         >
-                            <Lightbulb size={13} /> Recomendaciones ({recomendaciones.length})
+                            💡 Alertas ({recomendaciones.length})
                         </button>
                         <button
                             type="button"
                             className={`viaje-pill ${tab === 'config' ? 'active' : ''}`}
                             onClick={() => setTab('config')}
+                            style={{ padding: '5px 8px', fontSize: '0.76rem' }}
                             title="Configurar Gemini API Key"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
                         >
-                            <KeyRound size={13} /> API
+                            <KeyRound size={13} />
                         </button>
                     </div>
 
-                    {/* Contenido según pestaña */}
+                    {/* VISTA 1: CHAT INTERACTIVO */}
                     {tab === 'chat' && (
                         <>
                             <div
                                 ref={scrollRef}
                                 style={{
                                     flex: 1,
-                                    overflowY: 'auto',
                                     padding: 14,
+                                    overflowY: 'auto',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     gap: 10,
@@ -319,20 +384,21 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                                         key={i}
                                         style={{
                                             alignSelf: m.rol === 'usuario' ? 'flex-end' : 'flex-start',
-                                            maxWidth: '88%',
+                                            maxWidth: '90%',
                                             padding: '10px 13px',
                                             borderRadius: m.rol === 'usuario' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
                                             background: m.rol === 'usuario' ? 'var(--primary)' : '#ffffff',
                                             color: m.rol === 'usuario' ? '#ffffff' : 'var(--text)',
                                             border: m.rol === 'usuario' ? 'none' : '1px solid var(--border)',
-                                            fontSize: '0.83rem',
+                                            fontSize: '0.82rem',
                                             lineHeight: 1.45,
-                                            boxShadow: '0 2px 6px rgba(15,23,42,0.04)'
+                                            boxShadow: '0 2px 6px rgba(15,27,45,0.04)'
                                         }}
                                     >
-                                        {renderTextoFormateado(m.texto)}
+                                        {renderTexto(m.texto)}
                                     </div>
                                 ))}
+
                                 {cargando && (
                                     <div
                                         style={{
@@ -345,16 +411,15 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                                             color: 'var(--muted)'
                                         }}
                                     >
-                                        Analizando base de datos y generando respuesta...
+                                        Analizando paquetes, fechas y disponibilidad en vivo...
                                     </div>
                                 )}
 
-                                {/* Chips de preguntas sugeridas */}
                                 <div style={{ marginTop: 4 }}>
-                                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>
-                                        CONSULTAS Y RECOMENDACIONES RÁPIDAS:
+                                    <div style={{ fontSize: '0.71rem', fontWeight: 700, color: 'var(--muted)', marginBottom: 6 }}>
+                                        Consultas rápidas de ejemplo:
                                     </div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                                         {PREGUNTAS_RAPIDAS.map((preg, idx) => (
                                             <button
                                                 key={idx}
@@ -362,13 +427,14 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                                                 onClick={() => enviarPregunta(preg)}
                                                 style={{
                                                     textAlign: 'left',
-                                                    fontSize: '0.75rem',
                                                     padding: '6px 10px',
-                                                    borderRadius: 10,
+                                                    borderRadius: 8,
                                                     border: '1px solid #cbd5e1',
                                                     background: '#ffffff',
-                                                    color: '#0f172a',
-                                                    cursor: 'pointer'
+                                                    fontSize: '0.75rem',
+                                                    color: '#1e293b',
+                                                    cursor: 'pointer',
+                                                    fontWeight: 500
                                                 }}
                                             >
                                                 {preg}
@@ -378,7 +444,6 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                                 </div>
                             </div>
 
-                            {/* Input de envío */}
                             <form
                                 onSubmit={(e) => {
                                     e.preventDefault();
@@ -393,67 +458,284 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                                 }}
                             >
                                 <input
-                                    className="input"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Escribe tu duda o pide una recomendación..."
-                                    style={{ fontSize: '0.84rem' }}
+                                    placeholder="Ej: Cliente con $350 para 2 adultos y 1 niño..."
+                                    style={{
+                                        flex: 1,
+                                        padding: '9px 12px',
+                                        borderRadius: 10,
+                                        border: '1px solid var(--border)',
+                                        fontSize: '0.83rem'
+                                    }}
                                 />
                                 <button type="submit" className="btn btn-primary" disabled={cargando} style={{ padding: '9px 13px' }}>
-                                    <Send size={15} />
+                                    <Send size={16} />
                                 </button>
                             </form>
                         </>
                     )}
 
+                    {/* VISTA 2: COTIZADOR INTERACTIVO POR PRESUPUESTO */}
+                    {tab === 'cotizador' && (
+                        <div style={{ flex: 1, padding: 14, overflowY: 'auto', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <form onSubmit={ejecutarCotizacion} style={{ background: '#fff', padding: 12, borderRadius: 12, border: '1px solid var(--border)' }}>
+                                <div style={{ fontWeight: 800, fontSize: '0.85rem', color: '#0f172a', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Calculator size={15} color="var(--primary)" /> Cotizador Inteligente por Presupuesto
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                                    <div>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: 3 }}>
+                                            Presupuesto Total ($ USD)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            step="1"
+                                            min="10"
+                                            value={presupuesto}
+                                            onChange={(e) => setPresupuesto(e.target.value)}
+                                            placeholder="Ej. 300"
+                                            style={{ width: '100%', padding: '6px 9px', borderRadius: 8, border: '1px solid var(--border)', fontWeight: 700 }}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: 3 }}>
+                                            Destino o Mes (Opcional)
+                                        </label>
+                                        <input
+                                            value={filtroTexto}
+                                            onChange={(e) => setFiltroTexto(e.target.value)}
+                                            placeholder="Ej. Mérida, diciembre..."
+                                            style={{ width: '100%', padding: '6px 9px', borderRadius: 8, border: '1px solid var(--border)' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Botones rápidos de presupuesto */}
+                                <div style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
+                                    {[120, 250, 400, 600, 1000].map(val => (
+                                        <button
+                                            key={val}
+                                            type="button"
+                                            onClick={() => setPresupuesto(String(val))}
+                                            style={{
+                                                padding: '2px 8px',
+                                                fontSize: '0.72rem',
+                                                borderRadius: 6,
+                                                border: Number(presupuesto) === val ? '1.5px solid var(--primary)' : '1px solid var(--border)',
+                                                background: Number(presupuesto) === val ? 'var(--primary-soft)' : '#f8fafc',
+                                                fontWeight: 700,
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            ${val}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 10 }}>
+                                    <div>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569', display: 'block' }}>Adultos (+13)</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            value={adultos}
+                                            onChange={(e) => setAdultos(e.target.value)}
+                                            style={{ width: '100%', padding: '5px 8px', borderRadius: 8, border: '1px solid var(--border)' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569', display: 'block' }}>Niños (3-12, -25%)</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="15"
+                                            value={ninos}
+                                            onChange={(e) => setNinos(e.target.value)}
+                                            style={{ width: '100%', padding: '5px 8px', borderRadius: 8, border: '1px solid var(--border)' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569', display: 'block' }}>Infantes (&lt;3, $0)</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="10"
+                                            value={infantes}
+                                            onChange={(e) => setInfantes(e.target.value)}
+                                            style={{ width: '100%', padding: '5px 8px', borderRadius: 8, border: '1px solid var(--border)' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <button type="submit" className="btn btn-primary" disabled={cargandoCotizacion} style={{ width: '100%', justifyContent: 'center', padding: '7px' }}>
+                                    {cargandoCotizacion ? 'Calculando opciones...' : '🔍 Buscar Paquetes que le Convienen'}
+                                </button>
+                            </form>
+
+                            {resultadoCotizacion && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{ fontSize: '0.75rem', color: '#475569', background: '#fff', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)' }}>
+                                        <strong>Presupuesto: ${resultadoCotizacion.presupuesto}</strong> (Bs. {resultadoCotizacion.presupuesto_bs.toLocaleString('es-VE')} · ${resultadoCotizacion.presupuesto_cop.toLocaleString('es-CO')} COP) · Abono mín. grupo: <strong>${resultadoCotizacion.abono_minimo_requerido}</strong>
+                                    </div>
+
+                                    {resultadoCotizacion.opciones_completas.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#15803d', marginBottom: 6 }}>
+                                                ✅ Cubre el 100% de Contado ({resultadoCotizacion.opciones_completas.length} viajes):
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                {resultadoCotizacion.opciones_completas.map(op => (
+                                                    <div key={op.id_viaje} style={{ background: '#fff', border: '1.5px solid #86efac', borderRadius: 10, padding: 10 }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                            <div>
+                                                                <strong style={{ fontSize: '0.86rem', color: '#0f172a' }}>{op.destino}</strong>
+                                                                <div style={{ fontSize: '0.74rem', color: '#0f766e', fontWeight: 700 }}>{op.paquete} ({op.duracion})</div>
+                                                            </div>
+                                                            <span style={{ background: '#dcfce7', color: '#15803d', fontWeight: 800, fontSize: '0.8rem', padding: '2px 8px', borderRadius: 6 }}>
+                                                                Total: ${op.costo_total_grupo}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ fontSize: '0.74rem', color: '#475569', marginTop: 5 }}>
+                                                            📅 <strong>Salida:</strong> {op.fecha_salida} al {op.fecha_retorno} · {op.metodo_transporte} ({op.cupos_disponibles} libres)
+                                                        </div>
+                                                        <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 3 }}>
+                                                            🎁 {op.incluye}
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 6, borderTop: '1px solid #f1f5f9' }}>
+                                                            <span style={{ fontSize: '0.73rem', color: '#15803d', fontWeight: 700 }}>
+                                                                {op.sobrante > 0 ? `✓ Le sobran $${op.sobrante}` : '✓ Presupuesto exacto'}
+                                                            </span>
+                                                            {onIrAClientes && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-primary"
+                                                                    style={{ padding: '4px 10px', fontSize: '0.73rem' }}
+                                                                    onClick={() => {
+                                                                        setAbierto(false);
+                                                                        onIrAClientes();
+                                                                    }}
+                                                                >
+                                                                    Reservar <ArrowRight size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {resultadoCotizacion.opciones_con_abono.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#b45309', marginBottom: 6 }}>
+                                                📌 Puede Apartar Hoy (Abonando ${resultadoCotizacion.abono_minimo_requerido}+):
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                {resultadoCotizacion.opciones_con_abono.slice(0, 4).map(op => (
+                                                    <div key={op.id_viaje} style={{ background: '#fff', border: '1px solid #fcd34d', borderRadius: 10, padding: 10 }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                            <div>
+                                                                <strong style={{ fontSize: '0.84rem' }}>{op.destino} — {op.paquete}</strong>
+                                                                <div style={{ fontSize: '0.73rem', color: '#64748b' }}>📅 Salida: {op.fecha_salida} · {op.cupos_disponibles} cupos</div>
+                                                            </div>
+                                                            <strong style={{ fontSize: '0.8rem', color: '#0f172a' }}>Total: ${op.costo_total_grupo}</strong>
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                                                            <span style={{ fontSize: '0.73rem', color: '#b45309', fontWeight: 700 }}>
+                                                                Abona hoy ${resultadoCotizacion.presupuesto} → Resta ${op.falta_para_total}
+                                                            </span>
+                                                            {onIrAClientes && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-ghost"
+                                                                    style={{ padding: '3px 8px', fontSize: '0.72rem' }}
+                                                                    onClick={() => {
+                                                                        setAbierto(false);
+                                                                        onIrAClientes();
+                                                                    }}
+                                                                >
+                                                                    Apartar <ArrowRight size={11} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* VISTA 3: RECOMENDACIONES OPERATIVAS CON NAVEGACIÓN DIRECTA */}
                     {tab === 'recomendaciones' && (
-                        <div style={{ flex: 1, overflowY: 'auto', padding: 14, background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            <div style={{ fontSize: '0.8rem', color: '#475569', marginBottom: 2 }}>
-                                Diagnóstico automático generado a partir de tus viajes, ocupación de unidades, reservas y cuentas por cobrar:
-                            </div>
+                        <div style={{ flex: 1, padding: 14, overflowY: 'auto', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 10 }}>
                             {recomendaciones.map((r, i) => (
                                 <div
                                     key={i}
                                     style={{
                                         background: '#fff',
                                         border: '1px solid var(--border)',
-                                        borderLeft: '4px solid var(--primary)',
                                         borderRadius: 12,
-                                        padding: 12
+                                        padding: 12,
+                                        borderLeft: '4px solid var(--primary)'
                                     }}
                                 >
-                                    <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--primary-dark)', textTransform: 'uppercase' }}>
-                                        {r.categoria}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', fontWeight: 800, color: 'var(--primary-dark)', textTransform: 'uppercase' }}>
+                                        <Lightbulb size={14} /> {r.categoria}
                                     </div>
-                                    <div style={{ fontWeight: 700, fontSize: '0.88rem', marginTop: 3 }}>{r.titulo}</div>
-                                    <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: 4, lineHeight: 1.4 }}>
+                                    <div style={{ fontWeight: 700, fontSize: '0.88rem', marginTop: 4, color: 'var(--text)' }}>
+                                        {r.titulo}
+                                    </div>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: '6px 0 8px', lineHeight: 1.4 }}>
                                         {r.detalle}
-                                    </div>
+                                    </p>
                                     <button
                                         type="button"
-                                        className="btn btn-ghost"
-                                        onClick={() => enviarPregunta(`Explícame cómo aplicar esta recomendación: ${r.titulo}`)}
-                                        style={{ marginTop: 8, padding: '5px 10px', fontSize: '0.75rem' }}
+                                        onClick={() => {
+                                            if (onNavegar && r.seccion_destino) {
+                                                onNavegar(r.seccion_destino);
+                                                setAbierto(false);
+                                            }
+                                        }}
+                                        style={{
+                                            fontSize: '0.75rem',
+                                            fontWeight: 700,
+                                            color: '#4338ca',
+                                            background: '#eef2ff',
+                                            border: '1px solid #c7d2fe',
+                                            padding: '5px 10px',
+                                            borderRadius: 6,
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 5
+                                        }}
                                     >
-                                        <Sparkles size={12} /> Preguntar al asistente cómo hacerlo
+                                        👉 {r.accion_sugerida}
                                     </button>
                                 </div>
                             ))}
                         </div>
                     )}
 
+                    {/* VISTA 4: CONFIGURAR GEMINI API KEY */}
                     {tab === 'config' && (
-                        <form onSubmit={handleGuardarKey} style={{ flex: 1, padding: 16, background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <div style={{ background: '#fff', padding: 14, borderRadius: 12, border: '1px solid var(--border)' }}>
+                        <form onSubmit={handleGuardarApiKey} style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column', gap: 12, background: '#f8fafc' }}>
+                            <div className="card" style={{ padding: 14 }}>
                                 <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <CheckCircle2 size={16} color="#0ea5a4" />
-                                    Modo Híbrido (Gemini 3.8 Flash + Motor Local BD)
+                                    <CheckCircle2 size={16} color="#16a34a" />
+                                    Motor Cotizador + Google Gemini
                                 </div>
-                                <p style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.45 }}>
-                                    El asistente funciona <strong>de inmediato sin API Key</strong> consultando directamente tu base de datos PostgreSQL.
-                                    Si deseas conectarlo además con <strong>Google Gemini (`gemini-3.8-flash`)</strong>, pega aquí tu clave de Google AI Studio:
+                                <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.45, margin: '0 0 12px' }}>
+                                    El asistente cotiza presupuestos, fechas, descuentos de niños y busca clientes directamente sobre tu base de datos PostgreSQL. Opcionalmente puedes agregar una API Key de Gemini:
                                 </p>
-                                <div className="field" style={{ marginTop: 12 }}>
+                                <div className="field">
                                     <label>GEMINI_API_KEY (Opcional)</label>
                                     <input
                                         type="password"
@@ -462,7 +744,7 @@ export default function AsistenteIA({ seccionActiva = 'dashboard' }) {
                                         placeholder="AIzaSy..."
                                     />
                                 </div>
-                                <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                                <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
                                     <button type="submit" className="btn btn-primary" disabled={guardandoKey}>
                                         {guardandoKey ? 'Guardando...' : 'Guardar Configuración'}
                                     </button>

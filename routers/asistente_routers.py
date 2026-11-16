@@ -5,18 +5,27 @@ from sqlmodel import Session
 from database.conexion import get_session
 from servicios.asistente_servicios import (
     consultar_asistente,
+    cotizar_por_presupuesto,
     obtener_recomendaciones_sistema,
     configurar_api_key,
     obtener_api_key_activa
 )
 
-router = APIRouter(prefix="/asistente", tags=["Asistente IA y Recomendaciones"])
+router = APIRouter(prefix="/asistente", tags=["Asistente Comercial y Cotizador"])
 
 
 class ChatRequest(BaseModel):
     mensaje: str
     previous_interaction_id: Optional[str] = None
     api_key: Optional[str] = None
+
+
+class CotizarRequest(BaseModel):
+    presupuesto: float
+    adultos: int = 1
+    ninos: int = 0
+    infantes: int = 0
+    filtro_texto: str = ""
 
 
 class ApiKeyConfigRequest(BaseModel):
@@ -29,6 +38,18 @@ def listar_recomendaciones(session: Session = Depends(get_session)):
         "recomendaciones": obtener_recomendaciones_sistema(session),
         "api_key_configurada": bool(obtener_api_key_activa())
     }
+
+
+@router.post("/cotizar")
+def cotizar_viajes_cliente(datos: CotizarRequest, session: Session = Depends(get_session)):
+    return cotizar_por_presupuesto(
+        session=session,
+        presupuesto=datos.presupuesto,
+        adultos=datos.adultos,
+        ninos=datos.ninos,
+        infantes=datos.infantes,
+        filtro_texto=datos.filtro_texto
+    )
 
 
 @router.post("/chat")

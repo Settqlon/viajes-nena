@@ -266,7 +266,14 @@ export default function App() {
                     />
                 </section>
             </div>
-            <AsistenteIA seccionActiva={seccionActiva} />
+            <AsistenteIA
+                seccionActiva={seccionActiva}
+                onNavegar={(idSeccion) => setSeccionActiva(idSeccion)}
+                onIrAClientes={() => {
+                    setAbrirNuevoEnClientes(true);
+                    setSeccionActiva('clientes');
+                }}
+            />
         </div>
     );
 }
