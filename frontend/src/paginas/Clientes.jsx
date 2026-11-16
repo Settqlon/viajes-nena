@@ -52,7 +52,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
     const [exito, setExito] = useState('');
     const [guardando, setGuardando] = useState(false);
 
-    // Estado del Asistente Lineal (Wizard)
+    // Control del flujo por pasos (Wizard)
     const [mostrarForm, setMostrarForm] = useState(false);
     const [pasoWizard, setPasoWizard] = useState(1);
     const [idEditando, setIdEditando] = useState(null);
@@ -656,7 +656,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                 </form>
             )}
 
-            {/* VISTA 2: ASISTENTE MODULAR LINEAL (WIZARD) */}
+            {/* VISTA 2: FORMULARIO MODULAR POR PASOS */}
             {mostrarForm && !idEditando && (
                 <div className="card fade-in" style={{ maxWidth: 940, margin: '0 auto 24px', padding: 0, overflow: 'hidden' }}>
                     {/* BARRA SUPERIOR LINEAL DEL WIZARD */}
@@ -754,10 +754,8 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
 
                     {/* CUERPO DEL MÓDULO ACTUAL */}
                     <div className="wizard-body">
-                        {/* ========================================================= */}
-                        {/* MÓDULO 1: DATOS DEL TITULAR (TELÉFONO Y CORREO OBLIGATORIOS)*/}
-                        {/* ========================================================= */}
-                        {pasoWizard === 1 && (
+                                                {/* MÓDULO 1: DATOS DEL TITULAR (TELÉFONO Y CORREO OBLIGATORIOS)*/}
+                                                {pasoWizard === 1 && (
                             <div className="fade-in">
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
                                     <div>
@@ -892,10 +890,8 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                             </div>
                         )}
 
-                        {/* ========================================================= */}
-                        {/* MÓDULO 2: SELECCIÓN DE VIAJE DISPONIBLE                   */}
-                        {/* ========================================================= */}
-                        {pasoWizard === 2 && (
+                                                {/* MÓDULO 2: SELECCIÓN DE VIAJE DISPONIBLE                   */}
+                                                {pasoWizard === 2 && (
                             <div className="fade-in">
                                 <div style={{ marginBottom: 14 }}>
                                     <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
@@ -952,10 +948,8 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                             </div>
                         )}
 
-                        {/* ========================================================= */}
-                        {/* MÓDULO 3: ACOMPAÑANTES Y CONTACTO (TELÉFONO Y CORREO)     */}
-                        {/* ========================================================= */}
-                        {pasoWizard === 3 && (
+                                                {/* MÓDULO 3: ACOMPAÑANTES Y CONTACTO (TELÉFONO Y CORREO)     */}
+                                                {pasoWizard === 3 && (
                             <div className="fade-in">
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
                                     <div>
@@ -1176,10 +1170,8 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                             </div>
                         )}
 
-                        {/* ========================================================= */}
-                        {/* MÓDULO 4: CROQUIS DE ASIENTOS                              */}
-                        {/* ========================================================= */}
-                        {pasoWizard === 4 && (
+                                                {/* MÓDULO 4: CROQUIS DE ASIENTOS                              */}
+                                                {pasoWizard === 4 && (
                             <div className="fade-in">
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
                                     <div>
@@ -1250,10 +1242,8 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                             </div>
                         )}
 
-                        {/* ========================================================= */}
-                        {/* MÓDULO 5: RESUMEN LIMPIO Y ABONO INICIAL                   */}
-                        {/* ========================================================= */}
-                        {pasoWizard === 5 && (
+                                                {/* MÓDULO 5: RESUMEN LIMPIO Y ABONO INICIAL                   */}
+                                                {pasoWizard === 5 && (
                             <div className="fade-in">
                                 <div style={{ marginBottom: 14 }}>
                                     <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>

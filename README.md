@@ -50,7 +50,7 @@ Todas las versiones exactas están congeladas en los archivos [`requirements.txt
 | **`python-dotenv`** | `1.2.4` | Carga automática de variables de entorno desde el archivo `.env`. |
 | **`requests`** | `2.34.2` | Cliente HTTP para sincronización de tasas de cambio (BCV / COP). |
 | **`httpx`** | `0.28.1` | Cliente HTTP asíncrono para integraciones externas. |
-| **`google-genai`** | `2.34.0` | SDK oficial de Google Gemini para el asistente inteligente del sistema. |
+| **`google-genai`** | `2.34.0` | Cliente de Google GenAI para utilidades de procesamiento de texto. |
 | **`email-validator`** | `2.3.0` | Validación estricta de direcciones de correo electrónico. |
 | **`cryptography`** | `50.0.2` | Primitivas criptográficas para cifrado y firmas digitales. |
 

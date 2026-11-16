@@ -8,14 +8,12 @@ from servicios.auditoria_servicios import registrar_auditoria
 
 ABONO_MINIMO_POR_INTEGRANTE = Decimal("30.00")
 
-# ==========================================
 # IDENTIFICACIÓN DE VIAJEROS (Venezuela)
 # - "Cédula": V-/E- (lo normal en adultos y niños mayores de ~9-10 años)
 # - "Pasaporte": número alfanumérico del pasaporte
 # - "Sin Documento": menores que aún no tienen cédula. Se les asigna un
 #   identificador interno MENOR-<doc del representante>-<n>, de modo que
 #   al buscar por la cédula del representante también aparecen sus niños.
-# ==========================================
 TIPOS_DOCUMENTO = ("Cédula", "Pasaporte", "Sin Documento")
 PREFIJO_MENOR = "MENOR-"
 EDAD_MAXIMA_SIN_DOCUMENTO = 17

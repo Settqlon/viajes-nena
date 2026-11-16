@@ -53,7 +53,47 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
   top: 0; bottom: 0; left: 0;
   padding: 22px 14px;
   overflow-y: auto;
+  overflow-x: hidden;
   z-index: 20;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), padding 0.22s ease;
+}
+
+.main {
+  margin-left: 260px;
+  flex: 1;
+  min-width: 0;
+  transition: margin-left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Modo colapsado */
+.sidebar.collapsed {
+  width: 72px;
+  padding: 22px 8px;
+}
+
+.layout.sidebar-collapsed .main {
+  margin-left: 72px;
+}
+
+.sidebar.collapsed .brand {
+  justify-content: center;
+  padding: 4px 0 20px;
+}
+
+.sidebar.collapsed .brand-info,
+.sidebar.collapsed .nav-group-title {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 11px 0;
+}
+
+.sidebar.collapsed .btn-logout {
+  justify-content: center;
+  padding: 10px 0;
+  width: 100%;
 }
 
 .brand {
@@ -91,8 +131,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 .nav-item.active svg { color: var(--primary); }
 
 .sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
-
-.main { margin-left: 260px; flex: 1; min-width: 0; }
 
 .topbar {
   height: 70px; background: var(--card);

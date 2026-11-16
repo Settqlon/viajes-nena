@@ -81,7 +81,7 @@ export default function Viajes({ esAdmin = true, esOperador = false, esVendedor 
     const [error, setError] = useState('');
     const [guardando, setGuardando] = useState(false);
 
-    // Estado del Asistente Lineal para Programar Viajes
+    // Formulario paso a paso para programar viajes
     const [mostrarForm, setMostrarForm] = useState(false);
     const [pasoViaje, setPasoViaje] = useState(1);
     const [idEditando, setIdEditando] = useState(null);
@@ -313,7 +313,7 @@ export default function Viajes({ esAdmin = true, esOperador = false, esVendedor 
 
             {error && <div className="alert alert-error">{error}</div>}
 
-            {/* ASISTENTE LINEAL PARA PROGRAMAR VIAJES */}
+            {/* REGISTRO PASO A PASO PARA PROGRAMAR VIAJES */}
             {mostrarForm && (
                 <div className="card fade-in" style={{ maxWidth: 900, margin: '0 auto 24px', padding: 0, overflow: 'hidden' }}>
                     {/* ENCABEZADO STEPPER LINEAL */}
@@ -367,7 +367,7 @@ export default function Viajes({ esAdmin = true, esOperador = false, esVendedor 
                         </div>
                     </div>
 
-                    {/* CUERPO DEL ASISTENTE */}
+                    {/* CONTENIDO DEL FORMULARIO */}
                     <div className="wizard-body">
                         {/* PASO 1: DESTINO Y PAQUETE */}
                         {pasoViaje === 1 && (

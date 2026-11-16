@@ -210,9 +210,6 @@ export default function Catalogo({ esAdmin = true, esOperador = false, esVendedo
                 </button>
             </div>
 
-            {/* ======================================================== */}
-            {/* PESTAÑA 1: DESTINOS TURÍSTICOS                            */}
-            {/* ======================================================== */}
             {tabActiva === 'destinos' && (
                 <div className="fade-in">
                     {/* FORMULARIO DE DESTINO */}
@@ -354,9 +351,6 @@ export default function Catalogo({ esAdmin = true, esOperador = false, esVendedo
                 </div>
             )}
 
-            {/* ======================================================== */}
-            {/* PESTAÑA 2: PAQUETES TURÍSTICOS                            */}
-            {/* ======================================================== */}
             {tabActiva === 'paquetes' && (
                 <div className="fade-in">
                     {/* FORMULARIO DE PAQUETE */}

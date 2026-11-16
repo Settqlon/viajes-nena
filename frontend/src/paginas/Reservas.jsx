@@ -380,17 +380,17 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
                 <div className="modal-backdrop" onClick={() => setMostrarModalNuevaReserva(false)}>
                     <div className="modal-card fade-in" style={{ maxWidth: 540 }} onClick={(e) => e.stopPropagation()}>
                         <div className="card-header" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
-                            <div className="card-title">Creación Asistida de Reserva</div>
+                            <div className="card-title">Registro Paso a Paso de Reserva</div>
                             <button className="btn btn-ghost" onClick={() => setMostrarModalNuevaReserva(false)}>
                                 <X size={18} />
                             </button>
                         </div>
                         <div style={{ padding: '16px 0', fontSize: '0.9rem', color: 'var(--text)' }}>
                             <p style={{ margin: '0 0 12px' }}>
-                                Para garantizar que los datos del cliente, los acompañantes, los descuentos por edad y los asientos en el croquis queden perfectamente vinculados, utiliza el <strong>Asistente Modular</strong>.
+                                Para garantizar que los datos del cliente, los acompañantes, los descuentos por edad y los asientos en el croquis queden vinculados correctamente, utiliza el módulo de <strong>Registro de Clientes</strong>.
                             </p>
                             <div style={{ background: '#f8fafc', padding: 12, borderRadius: 10, border: '1px solid var(--border)', marginBottom: 16 }}>
-                                <strong>El asistente te guiará paso a paso en:</strong>
+                                <strong>El proceso incluye:</strong>
                                 <ul style={{ margin: '6px 0 0 18px', padding: 0, fontSize: '0.84rem', color: 'var(--muted)' }}>
                                     <li>Datos y contacto de WhatsApp del cliente titular (+18)</li>
                                     <li>Selección de viaje con cupos disponibles en vivo</li>

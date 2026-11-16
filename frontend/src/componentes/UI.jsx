@@ -334,10 +334,8 @@ export function SelectorViaje({
     );
 }
 
-// ==========================================
 // HELPERS PARA IDENTIFICACIÓN VENEZOLANA
 // Cédula / Pasaporte / Menor sin documento
-// ==========================================
 export const TIPOS_DOC_TITULAR = ['Cédula', 'Pasaporte'];
 export const TIPOS_DOC_VIAJERO = ['Cédula', 'Pasaporte', 'Sin Documento'];
 
@@ -454,10 +452,8 @@ export const coincideBusquedaAvanzada = (query, item = {}) => {
     );
 };
 
-// ==========================================
 // MÉTODOS DE PAGO Y MONEDAS (USD, BS, COP)
 // Soporte para Nequi, Bancolombia, Pago Móvil, etc.
-// ==========================================
 export { formatoBs, formatoCOP, calcularEquivalentes };
 
 export const METODOS_PAGO = [
@@ -523,10 +519,8 @@ export function BadgeMetodoPago({ metodo, conMoneda = true }) {
     );
 }
 
-// ==========================================
 // CALCULADORA Y CONVERSOR MULTIDIVISA
 // Calcula en tiempo real USD, Bolívares y Pesos
-// ==========================================
 export function CalculadoraDivisas({
     montoUSD = 0,
     metodoSeleccionado = 'Transferencia',
@@ -781,9 +775,7 @@ export function CalculadoraDivisas({
     );
 }
 
-// ==========================================
 // MODAL PARA EDITAR TASAS DE CAMBIO
-// ==========================================
 export function ModalEditarTasas({ abierto, onCerrar, onTasasActualizadas }) {
     const [tasaBCV, setTasaBCV] = useState('');
     const [tasaCOP, setTasaCOP] = useState('');
@@ -887,9 +879,7 @@ export function ModalEditarTasas({ abierto, onCerrar, onTasasActualizadas }) {
     );
 }
 
-// ==========================================
 // WIDGET DE TASAS PARA LA BARRA SUPERIOR (TOPBAR)
-// ==========================================
 export function WidgetTasasTopBar() {
     const [tasas, setTasas] = useState(obtenerTasasLocales());
     const [modalAbierto, setModalAbierto] = useState(false);
@@ -905,36 +895,29 @@ export function WidgetTasasTopBar() {
 
     return (
         <>
-            <div
+            <button
+                type="button"
                 onClick={() => setModalAbierto(true)}
                 style={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 8,
+                    gap: 6,
                     background: '#ffffff',
                     border: '1px solid var(--border)',
                     borderRadius: 999,
-                    padding: '4px 12px',
+                    padding: '5px 12px',
                     fontSize: '0.78rem',
                     cursor: 'pointer',
+                    color: '#475569',
+                    fontWeight: 600,
                     boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-                    transition: 'border-color 0.15s'
+                    transition: 'all 0.15s'
                 }}
-                title="Haz clic para actualizar la Tasa BCV y Pesos Colombianos"
+                title="Consultar y actualizar tasas de cambio (BCV y COP)"
             >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    <span>🇻🇪</span>
-                    <span style={{ color: '#64748b' }}>BCV:</span>
-                    <strong style={{ color: '#0f172a' }}>Bs. {tasas.tasa_bcv ? Number(tasas.tasa_bcv).toFixed(2) : '—'}</strong>
-                </span>
-                <span style={{ color: '#cbd5e1' }}>|</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    <span>🇨🇴</span>
-                    <span style={{ color: '#64748b' }}>COP:</span>
-                    <strong style={{ color: '#0f172a' }}>${tasas.tasa_cop ? Math.round(Number(tasas.tasa_cop)).toLocaleString('es-CO') : '—'}</strong>
-                </span>
-                <Edit3 size={12} color="#94a3b8" style={{ marginLeft: 2 }} />
-            </div>
+                <Coins size={14} color="var(--primary)" />
+                <span>Tasas de Cambio</span>
+            </button>
 
             <ModalEditarTasas
                 abierto={modalAbierto}
@@ -945,10 +928,8 @@ export function WidgetTasasTopBar() {
     );
 }
 
-// ==========================================
 // MODAL DE LIQUIDACIÓN RÁPIDA DE SALDO
 // Permite liquidar o abonar a una reserva en 1 clic
-// ==========================================
 export function ModalLiquidarSaldo({ infoReserva, abierto, onCerrar, onLiquidado }) {
     if (!abierto || !infoReserva) return null;
 

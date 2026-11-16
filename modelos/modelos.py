@@ -3,9 +3,7 @@ from typing import Optional
 from datetime import date, datetime
 from decimal import Decimal
 
-# ==========================================
 # TABLAS DE NIVEL 0
-# ==========================================
 class Usuario(SQLModel, table=True):
     __tablename__ = "usuarios"
 
@@ -54,9 +52,7 @@ class Destino(SQLModel, table=True):
     viajes: list["Viaje"] = Relationship(back_populates="destino")
 
 
-# ==========================================
 # TABLAS DE NIVEL 1
-# ==========================================
 class Paquete(SQLModel, table=True):
     __tablename__ = "paquetes"
 
@@ -136,9 +132,7 @@ class Auditoria(SQLModel, table=True):
     usuario: Optional[Usuario] = Relationship(back_populates="auditorias")
 
 
-# ==========================================
 # TABLAS DE NIVEL 2
-# ==========================================
 class Reserva(SQLModel, table=True):
     __tablename__ = "reservas"
 
@@ -202,9 +196,7 @@ class Ganancia(SQLModel, table=True):
     viaje: Optional[Viaje] = Relationship(back_populates="ganancia")
 
 
-# ==========================================
 # TABLAS DE NIVEL 3
-# ==========================================
 class Pago(SQLModel, table=True):
     __tablename__ = "pagos"
 
