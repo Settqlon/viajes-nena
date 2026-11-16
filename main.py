@@ -15,7 +15,7 @@ from routers import inconvenientes_routers
 from routers import integrantes_routers
 from routers import reserva_routers
 from routers import procesos_routers
-from routers import costos_viaje_routers, estadisticas_routers, tasas_router
+from routers import costos_viaje_routers, estadisticas_routers, asistente_routers, tasas_router
 
 app = FastAPI(
     title="API Viajes La Nena",
@@ -50,6 +50,7 @@ app.include_router(reserva_routers.router)
 app.include_router(procesos_routers.router)
 app.include_router(costos_viaje_routers.router) 
 app.include_router(estadisticas_routers.router)
+app.include_router(asistente_routers.router)
 app.include_router(tasas_router.router)
 
 @app.get("/", tags=["Root"])

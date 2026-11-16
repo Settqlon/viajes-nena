@@ -17,6 +17,7 @@ import ControlFinanciero from './paginas/ControlFinanciero';
 import Procesos from './paginas/Procesos';
 import Usuarios from './paginas/Usuarios';
 import Auditoria from './paginas/Auditoria';
+import AsistenteIA from './componentes/AsistenteIA';
 import { WidgetTasasTopBar } from './componentes/UI';
 import { logout } from './servicios/authServicios';
 
@@ -265,6 +266,7 @@ export default function App() {
                     />
                 </section>
             </div>
+            <AsistenteIA seccionActiva={seccionActiva} />
         </div>
     );
 }
