@@ -19,9 +19,9 @@ const notificarCarga = (delta) => {
     suscriptoresCarga.forEach((fn) => fn(activo));
 };
 
-// Adjunta el token guardado en las peticiones enviadas al backend y activa el estado de carga
 api.interceptors.request.use(
     (config) => {
+        config._cargaContada = true;
         notificarCarga(1);
         const token = localStorage.getItem('token');
         if (token) {
@@ -30,18 +30,21 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
-        notificarCarga(-1);
         return Promise.reject(error);
     }
 );
 
 api.interceptors.response.use(
     (response) => {
-        notificarCarga(-1);
+        if (response.config?._cargaContada) notificarCarga(-1);
         return response;
     },
     (error) => {
-        notificarCarga(-1);
+        if (error.config?._cargaContada) notificarCarga(-1);
+        if (error.response?.status === 401 && !String(error.config?.url || '').includes('/auth/login')) {
+            localStorage.removeItem('token');
+            window.location.reload();
+        }
         return Promise.reject(error);
     }
 );

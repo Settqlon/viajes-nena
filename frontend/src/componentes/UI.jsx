@@ -77,10 +77,17 @@ export function CargadorGlobalSombrilla() {
         let timer = null;
         const desuscribir = suscribirCarga((activo) => {
             if (activo) {
-                // Mostrar si la consulta tarda más de 180ms para que en PCs lentas siempre acompañe al usuario
-                timer = setTimeout(() => setVisible(true), 180);
+                if (!timer) {
+                    timer = setTimeout(() => {
+                        timer = null;
+                        setVisible(true);
+                    }, 180);
+                }
             } else {
-                if (timer) clearTimeout(timer);
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
                 setVisible(false);
             }
         });
