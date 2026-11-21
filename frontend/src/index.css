@@ -40,7 +40,6 @@ body {
 input, select, textarea, button { font-family: inherit; font-size: 0.92rem; }
 h1, h2, h3, h4 { margin: 0; color: var(--text); }
 
-/* ================= LAYOUT ================= */
 .layout { display: flex; min-height: 100vh; }
 
 .sidebar {
@@ -108,6 +107,15 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
   display: grid; place-items: center; color: #fff;
   box-shadow: 0 6px 18px rgba(14,165,164,0.35);
 }
+.brand-logo-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(14, 165, 164, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+}
 .brand-title { color: #fff; font-weight: 800; font-size: 1.05rem; line-height: 1.1; }
 .brand-sub { font-size: 0.72rem; color: #7c8da6; }
 
@@ -149,7 +157,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 
 .content { padding: 28px 32px 48px; max-width: 1400px; }
 
-/* ================= CARDS ================= */
 .card {
   background: var(--card); border-radius: var(--radius);
   box-shadow: var(--shadow); border: 1px solid var(--border);
@@ -182,7 +189,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
   .brand-title, .brand-sub, .nav-group-title, .nav-item span { display: none; }
 }
 
-/* ================= STAT CARDS ================= */
 .stat-card { display: flex; gap: 16px; align-items: flex-start; position: relative; overflow: hidden; }
 .stat-icon {
   width: 48px; height: 48px; border-radius: 12px;
@@ -237,7 +243,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 .rank-value { font-weight: 700; font-size: 0.88rem; text-align: right; }
 .rank-value small { display: block; color: var(--muted); font-weight: 500; font-size: 0.72rem; }
 
-/* ================= FORMS ================= */
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 16px; }
 .form-grid .full { grid-column: 1 / -1; }
 .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
@@ -252,7 +257,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 }
 .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
 
-/* ================= BUTTONS ================= */
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 16px; border-radius: 10px; border: 1px solid transparent;
@@ -271,7 +275,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 }
 .btn-logout:hover { background: rgba(239,68,68,0.2); color: #fff; }
 
-/* ================= TABLE ================= */
 .table-wrap { overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 .table th {
@@ -294,7 +297,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 }
 .search input { border: none; outline: none; padding: 9px 0; background: transparent; min-width: 220px; }
 
-/* ================= BADGES ================= */
 .badge {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 600; white-space: nowrap;
@@ -322,7 +324,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 }
 .calc-box strong { font-size: 1.3rem; color: var(--primary-dark); }
 
-/* ================= LOGIN ================= */
 .login-page { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
 .login-hero {
   background: linear-gradient(160deg, rgba(15,27,45,0.85), rgba(14,165,164,0.75)),
@@ -344,7 +345,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 .fade-in { animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-/* ================= MODAL & DRAWER DETALLE ================= */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -393,7 +393,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
   align-items: center;
 }
 
-/* ================= SELECTOR VISUAL DE VIAJES ================= */
 .viaje-selector-box {
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -574,7 +573,6 @@ h1, h2, h3, h4 { margin: 0; color: var(--text); }
 
 
 
-/* ================= ASISTENTE MODULAR / STEP WIZARD ================= */
 .wizard-header {
   background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
   border-bottom: 1.5px solid var(--border);

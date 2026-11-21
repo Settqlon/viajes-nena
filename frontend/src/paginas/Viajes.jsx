@@ -81,13 +81,11 @@ export default function Viajes({ esAdmin = true, esOperador = false, esVendedor 
     const [error, setError] = useState('');
     const [guardando, setGuardando] = useState(false);
 
-    // Formulario paso a paso para programar viajes
     const [mostrarForm, setMostrarForm] = useState(false);
     const [pasoViaje, setPasoViaje] = useState(1);
     const [idEditando, setIdEditando] = useState(null);
     const [busqueda, setBusqueda] = useState('');
 
-    // Modales separados para no saturar la vista principal
     const [mostrarModalCobranzas, setMostrarModalCobranzas] = useState(false);
     const [viajeCobranzaModal, setViajeCobranzaModal] = useState(null);
     const [viajeCroquisModal, setViajeCroquisModal] = useState(null);

@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.conexion import init_db
 
-# Importaciones de routers
 from routers import auth_router
 from routers import viajes_routers
 from routers import clientes_routers
@@ -35,7 +34,6 @@ app.add_middleware(
 def on_startup():
     init_db()
 
-# Inclusión de routers
 app.include_router(auth_router.router)
 app.include_router(destinos_routers.router)
 app.include_router(paquetes_routers.router)

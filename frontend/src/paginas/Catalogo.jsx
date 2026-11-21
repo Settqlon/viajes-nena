@@ -22,12 +22,10 @@ export default function Catalogo({ esAdmin = true, esOperador = false, esVendedo
     const [exito, setExito] = useState('');
     const [busqueda, setBusqueda] = useState('');
 
-    // Estado Destinos
     const [mostrarFormDestino, setMostrarFormDestino] = useState(false);
     const [idEditandoDestino, setIdEditandoDestino] = useState(null);
     const [formDestino, setFormDestino] = useState(FORM_DESTINO_INICIAL);
 
-    // Estado Paquetes
     const [mostrarFormPaquete, setMostrarFormPaquete] = useState(false);
     const [idEditandoPaquete, setIdEditandoPaquete] = useState(null);
     const [formPaquete, setFormPaquete] = useState(FORM_PAQUETE_INICIAL);
@@ -45,7 +43,6 @@ export default function Catalogo({ esAdmin = true, esOperador = false, esVendedo
 
     useEffect(() => { cargarDatos(); }, []);
 
-    // Handlers Destino
     const handleDestinoChange = (e) => setFormDestino({ ...formDestino, [e.target.name]: e.target.value });
 
     const iniciarEdicionDestino = (d) => {
@@ -87,7 +84,6 @@ export default function Catalogo({ esAdmin = true, esOperador = false, esVendedo
         }
     };
 
-    // Handlers Paquete
     const handlePaqueteChange = (e) => setFormPaquete({ ...formPaquete, [e.target.name]: e.target.value });
 
     const iniciarEdicionPaquete = (p) => {

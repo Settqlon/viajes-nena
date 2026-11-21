@@ -52,7 +52,6 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
     const [exito, setExito] = useState('');
     const [guardando, setGuardando] = useState(false);
 
-    // Control del flujo por pasos (Wizard)
     const [mostrarForm, setMostrarForm] = useState(false);
     const [pasoWizard, setPasoWizard] = useState(1);
     const [idEditando, setIdEditando] = useState(null);
@@ -60,14 +59,11 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
     const [form, setForm] = useState(FORM_INICIAL);
     const [mostrarConversorAvanzado, setMostrarConversorAvanzado] = useState(false);
 
-    // Expediente / Historial del viajero
     const [clienteExpediente, setClienteExpediente] = useState(null);
     const [reservaParaLiquidarDirecta, setReservaParaLiquidarDirecta] = useState(null);
 
-    // Modal de Confirmación y Comprobante WhatsApp
     const [reservaExitosa, setReservaExitosa] = useState(null);
 
-    // Datos del Viaje y Pasajeros
     const [asignarViajeAhora, setAsignarViajeAhora] = useState(true);
     const [clienteExistenteReserva, setClienteExistenteReserva] = useState(null);
     const [idViaje, setIdViaje] = useState('');

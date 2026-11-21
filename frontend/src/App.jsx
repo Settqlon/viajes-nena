@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import {
     LayoutDashboard, MapPin, Users, Plane, CalendarCheck, CreditCard, UserPlus,
-    TrendingUp, Workflow, UserCog, ShieldCheck, LogOut, TreePalm,
+    TrendingUp, Workflow, UserCog, ShieldCheck, LogOut,
     ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
+import logoEmpresa from './assets/logo-viajes-nena.png';
 import Login from './paginas/Login';
 import Dashboard from './paginas/Dashboard';
 import Catalogo from './paginas/Catalogo';
@@ -151,7 +152,11 @@ export default function App() {
                     }}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div className="brand-logo"><TreePalm size={22} /></div>
+                        <img
+                            src={logoEmpresa}
+                            alt="Viajes La Nena"
+                            className="brand-logo-img"
+                        />
                         {!sidebarColapsado && (
                             <div className="brand-info">
                                 <div className="brand-title">Viajes La Nena</div>

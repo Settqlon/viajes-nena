@@ -2,19 +2,7 @@ import { useState, useEffect } from 'react';
 import { Bus, Plane, UserCheck, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 import { Badge } from './UI';
 
-/**
- * Mapa interactivo de puestos para:
- * - Bus Cama de 2 Pisos (60 puestos por unidad: Piso 1 = 1..16 en 4 filas 2x2, Piso 2 = 17..60 en 11 filas 2x2)
- * - Avión Comercial (150 puestos por vuelo: 25 filas de 3x3 con pasillo central, ordenados del 1 al 150)
- *
- * Props:
- * - viaje: objeto del viaje seleccionado ({ id_viaje, metodo_transporte, cantidad_unidades })
- * - ocupadosExternos: mapa/array de asientos ya ocupados en ese viaje por otras reservas: [{ numero_asiento, nombre, apellido, documento_id, id_reserva }]
- * - pasajeros: lista de viajeros a quienes estamos asignando puesto: [{ id_temporal, nombre, apellido, documento_id, edad, numero_asiento }]
- * - onAsignarAsiento: (indexPasajero, numeroAsiento) => void
- * - onAutoAsignar: (nuevosAsientosArray) => void
- * - titulo: string opcional
- */
+// Mapa de puestos: Bus Cama (60 puestos, 2 pisos) y Avión Comercial (150 puestos)
 export default function MapaAsientos({
     viaje,
     ocupadosExternos = [],

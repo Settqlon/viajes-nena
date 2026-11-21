@@ -28,11 +28,9 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
     const [error, setError] = useState('');
     const [exito, setExito] = useState('');
 
-    // Filtros de búsqueda
     const [busqueda, setBusqueda] = useState('');
     const [filtroEstadoPago, setFiltroEstadoPago] = useState('todos'); // 'todos' | 'deuda' | 'solvente' | 'canceladas'
 
-    // Modal de liquidación y modal de detalle
     const [reservaParaLiquidarDirecta, setReservaParaLiquidarDirecta] = useState(null);
     const [reservaDetalle, setReservaDetalle] = useState(null);
     const [mostrarModalNuevaReserva, setMostrarModalNuevaReserva] = useState(false);
@@ -83,7 +81,6 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
         return { total, abonado, falta, solvente: falta <= 0.01 };
     };
 
-    // KPIs globales
     let totalFacturado = 0;
     let totalCobrado = 0;
     let totalPorCobrar = 0;
@@ -124,7 +121,6 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
         window.open(`https://wa.me/${tel}?text=${encodeURIComponent(texto)}`, '_blank');
     };
 
-    // Filtrado
     const q = busqueda.trim().toLowerCase();
     const reservasFiltradas = reservas.filter(r => {
         const cli = obtenerCliente(r.id_cliente);
@@ -132,7 +128,6 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
         const dest = v ? obtenerDestino(v.id_destino) : null;
         const fin = calcularFinanzasReserva(r);
 
-        // Filtro por píldoras de estado
         if (filtroEstadoPago === 'deuda' && (fin.solvente || !r.is_active)) return false;
         if (filtroEstadoPago === 'solvente' && (!fin.solvente || !r.is_active)) return false;
         if (filtroEstadoPago === 'canceladas' && r.is_active) return false;

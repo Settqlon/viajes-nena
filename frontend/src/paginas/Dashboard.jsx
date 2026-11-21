@@ -60,7 +60,6 @@ export default function Dashboard({ onNavegar }) {
         mesLabel: p.es_futuro ? `${nombreMes(p.mes)} (Proy.)` : nombreMes(p.mes)
     }));
 
-    // Combina ingresos y reservas por mes en un solo arreglo
     const meses = {};
     datos.reservas_por_mes.forEach(r => { meses[r.mes] = { mes: nombreMes(r.mes), ventas: r.ventas, reservas: r.reservas, ingresos: 0 }; });
     datos.ingresos_por_mes.forEach(p => {
@@ -81,8 +80,7 @@ export default function Dashboard({ onNavegar }) {
                 <BotonesExportar ruta="/reportes/financiero" nombreArchivo="Reporte_Ejecutivo_ViajesLaNena" />
             </div>
 
-            {/* KPIs */}
-            <div className="grid grid-4" style={{ marginBottom: 20 }}>
+                        <div className="grid grid-4" style={{ marginBottom: 20 }}>
                 <StatCard icono={Wallet} color="primary" etiqueta="Ventas totales" valor={formatoMoneda(kpis.ventas_totales)}
                     pie={`${porcentajeCobrado}% cobrado · ${formatoMoneda(kpis.por_cobrar)} por cobrar`} />
                 <StatCard icono={PiggyBank} color="success" etiqueta="Ganancia estimada" valor={formatoMoneda(kpis.ganancia_estimada)}
@@ -160,8 +158,7 @@ export default function Dashboard({ onNavegar }) {
                 </div>
             )}
 
-            {/* Viaje más vendido + Evolución mensual */}
-            <div className="grid grid-3" style={{ marginBottom: 20 }}>
+                        <div className="grid grid-3" style={{ marginBottom: 20 }}>
                 <div className="card hero-card">
                     <span className="hero-badge"><Trophy size={14} /> Viaje más vendido</span>
                     {top ? (
@@ -213,8 +210,7 @@ export default function Dashboard({ onNavegar }) {
                 </div>
             </div>
 
-            {/* Rankings */}
-            <div className="grid grid-3" style={{ marginBottom: 20 }}>
+                        <div className="grid grid-3" style={{ marginBottom: 20 }}>
                 <div className="card">
                     <div className="card-header">
                         <div><div className="card-title">Destinos más vendidos</div><div className="card-sub">Por número de reservas</div></div>
@@ -238,8 +234,7 @@ export default function Dashboard({ onNavegar }) {
                 </div>
             </div>
 
-            {/* Ganancias por viaje + Métodos de pago */}
-            <div className="grid grid-3" style={{ marginBottom: 20 }}>
+                        <div className="grid grid-3" style={{ marginBottom: 20 }}>
                 <div className="card span-2">
                     <div className="card-header">
                         <div><div className="card-title">Rentabilidad por viaje</div><div className="card-sub">Ingresos, costos y ganancia neta de viajes finalizados</div></div>
@@ -279,8 +274,7 @@ export default function Dashboard({ onNavegar }) {
                 </div>
             </div>
 
-            {/* Ocupación + Estatus + Edades */}
-            <div className="grid grid-3">
+                        <div className="grid grid-3">
                 <div className="card">
                     <div className="card-header">
                         <div><div className="card-title">Ocupación de viajes</div><div className="card-sub">Reservas sobre capacidad total</div></div>

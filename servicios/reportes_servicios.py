@@ -54,7 +54,6 @@ def _generar_excel_estilizado(
         bottom=Side(style="thin", color="CBD5E1")
     )
 
-    # Fila 1: Encabezado Institucional
     ws.merge_cells(f"A1:{letra_final}1")
     ws["A1"] = f"VIAJES LA NENA — {titulo.upper()}"
     ws["A1"].font = font_brand
@@ -62,7 +61,6 @@ def _generar_excel_estilizado(
     ws["A1"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
     ws.row_dimensions[1].height = 30
 
-    # Fila 2: Subtítulo y Fecha de Emisión
     fecha_emision = datetime.now().strftime("%d/%m/%Y %H:%M")
     ws.merge_cells(f"A2:{letra_final}2")
     ws["A2"] = f"{subtitulo}   |   Emitido el: {fecha_emision}"
@@ -73,7 +71,6 @@ def _generar_excel_estilizado(
 
     fila_actual = 4
 
-    # Bloque de KPIs de resumen
     if resumen_kpis:
         col_idx = 1
         for etiqueta, valor in resumen_kpis:
@@ -89,7 +86,6 @@ def _generar_excel_estilizado(
         ws.row_dimensions[fila_actual].height = 22
         fila_actual += 2
 
-    # Encabezados de la tabla
     ws.row_dimensions[fila_actual].height = 24
     for idx, col_nombre in enumerate(columnas, start=1):
         c = ws.cell(row=fila_actual, column=idx, value=col_nombre)
@@ -100,7 +96,6 @@ def _generar_excel_estilizado(
 
     fila_actual += 1
 
-    # Filas de datos
     for r_idx, fila in enumerate(filas):
         ws.row_dimensions[fila_actual].height = 20
         es_par = r_idx % 2 == 1
@@ -120,7 +115,6 @@ def _generar_excel_estilizado(
                 c.alignment = Alignment(horizontal="left", vertical="center")
         fila_actual += 1
 
-    # Fila de totales
     if fila_totales:
         ws.row_dimensions[fila_actual].height = 23
         for c_idx, valor in enumerate(fila_totales, start=1):
@@ -134,7 +128,6 @@ def _generar_excel_estilizado(
             else:
                 c.alignment = Alignment(horizontal="left", vertical="center")
 
-    # Autoajustar ancho de columnas
     for col in ws.columns:
         max_len = 0
         col_letter = get_column_letter(col[0].column)
@@ -212,7 +205,6 @@ def _generar_pdf_estilizado(
     elementos.append(Paragraph(f"VIAJES LA NENA — {titulo}", estilo_titulo))
     elementos.append(Paragraph(f"{subtitulo} &nbsp;|&nbsp; <b>Fecha de emisión:</b> {fecha_emision}", estilo_sub))
 
-    # Tabla resumen de KPIs
     if resumen_kpis:
         kpi_headers = [k[0] for k in resumen_kpis]
         kpi_vals = [k[1] for k in resumen_kpis]
@@ -237,7 +229,6 @@ def _generar_pdf_estilizado(
         elementos.append(t_kpi)
         elementos.append(Spacer(1, 0.4 * cm))
 
-    # Construir tabla principal
     datos_tabla = [columnas]
     for fila in filas:
         fila_formateada = []
@@ -300,9 +291,6 @@ def _generar_pdf_estilizado(
     return buffer.getvalue()
 
 
-# ==============================================================================
-# 1. REPORTE DE MANIFIESTO DE ABORDAJE POR VIAJE
-# ==============================================================================
 def generar_reporte_manifiesto(session: Session, id_viaje: int, formato: str = "pdf") -> tuple[bytes, str]:
     viaje = session.get(Viaje, id_viaje)
     destino = session.get(Destino, viaje.id_destino) if viaje else None
@@ -375,9 +363,6 @@ def generar_reporte_manifiesto(session: Session, id_viaje: int, formato: str = "
     return contenido, f"Manifiesto_Viaje_{id_viaje}_{nom_dest.replace(' ', '_')}.pdf"
 
 
-# ==============================================================================
-# 2. REPORTE DE CONTROL FINANCIERO Y RENTABILIDAD
-# ==============================================================================
 def generar_reporte_financiero(session: Session, formato: str = "pdf") -> tuple[bytes, str]:
     viajes = session.exec(select(Viaje).order_by(Viaje.id_viaje)).all()
     destinos = {d.id_destino: d.nombre_destino for d in session.exec(select(Destino)).all()}
@@ -453,9 +438,6 @@ def generar_reporte_financiero(session: Session, formato: str = "pdf") -> tuple[
     return contenido, "Reporte_Control_Financiero_ViajesLaNena.pdf"
 
 
-# ==============================================================================
-# 3. REPORTE DE RESERVACIONES Y CUENTAS POR COBRAR
-# ==============================================================================
 def generar_reporte_reservas(session: Session, formato: str = "pdf") -> tuple[bytes, str]:
     reservas = session.exec(select(Reserva).order_by(Reserva.id_reserva.desc())).all()
     clientes = {c.id_cliente.lower(): c for c in session.exec(select(Cliente)).all()}
@@ -524,9 +506,6 @@ def generar_reporte_reservas(session: Session, formato: str = "pdf") -> tuple[by
     return contenido, "Reporte_Reservaciones_ViajesLaNena.pdf"
 
 
-# ==============================================================================
-# 4. REPORTE DE PAGOS Y COBRANZAS
-# ==============================================================================
 def generar_reporte_pagos(session: Session, formato: str = "pdf") -> tuple[bytes, str]:
     pagos = session.exec(select(Pago).order_by(Pago.id_pago.desc())).all()
     reservas = {r.id_reserva: r for r in session.exec(select(Reserva)).all()}
@@ -572,9 +551,6 @@ def generar_reporte_pagos(session: Session, formato: str = "pdf") -> tuple[bytes
     return contenido, "Reporte_Pagos_ViajesLaNena.pdf"
 
 
-# ==============================================================================
-# 5. REPORTE DE AUDITORÍA Y TRAZABILIDAD
-# ==============================================================================
 def generar_reporte_auditoria(session: Session, formato: str = "pdf") -> tuple[bytes, str]:
     auditorias = session.exec(select(Auditoria).order_by(Auditoria.fecha_hora.desc())).all()
     usuarios = {u.id_usuario: u.nombre for u in session.exec(select(Usuario)).all()}

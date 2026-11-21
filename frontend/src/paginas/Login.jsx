@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { TreePalm, Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn } from 'lucide-react';
 import { login } from '../servicios/authServicios';
+import logoEmpresa from '../assets/logo-viajes-nena.png';
 
 export default function Login({ onLoginSuccess }) {
     const [correo, setCorreo] = useState('');
@@ -25,9 +26,14 @@ export default function Login({ onLoginSuccess }) {
     return (
         <div className="login-page">
             <div className="login-hero">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div className="brand-logo"><TreePalm size={22} /></div>
-                    <strong style={{ fontSize: '1.1rem' }}>Viajes La Nena</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <img
+                        src={logoEmpresa}
+                        alt="Viajes La Nena"
+                        className="brand-logo-img"
+                        style={{ width: 54, height: 54 }}
+                    />
+                    <strong style={{ fontSize: '1.2rem' }}>Viajes La Nena</strong>
                 </div>
                 <div>
                     <h1>Gestiona cada viaje,<br />cada cliente y cada ganancia.</h1>

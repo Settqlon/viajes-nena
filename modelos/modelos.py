@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import date, datetime
 from decimal import Decimal
 
-# TABLAS DE NIVEL 0
 class Usuario(SQLModel, table=True):
     __tablename__ = "usuarios"
 
@@ -16,7 +15,6 @@ class Usuario(SQLModel, table=True):
     fecha_creacion: datetime = Field(default_factory=datetime.now)
     is_active: bool = Field(default=True)
 
-    # Relaciones hacia los hijos
     procesos: list["Proceso"] = Relationship(back_populates="usuario")
     auditorias: list["Auditoria"] = Relationship(back_populates="usuario")
 
@@ -34,7 +32,6 @@ class Cliente(SQLModel, table=True):
     direccion: str
     is_active: bool = Field(default=True)
 
-    # Relaciones hacia los hijos
     reservas: list["Reserva"] = Relationship(back_populates="cliente")
 
 
@@ -47,12 +44,10 @@ class Destino(SQLModel, table=True):
     precio_base: Decimal
     is_active: bool = Field(default=True)
 
-    # Relaciones hacia los hijos
     paquetes: list["Paquete"] = Relationship(back_populates="destino")
     viajes: list["Viaje"] = Relationship(back_populates="destino")
 
 
-# TABLAS DE NIVEL 1
 class Paquete(SQLModel, table=True):
     __tablename__ = "paquetes"
 
@@ -69,10 +64,8 @@ class Paquete(SQLModel, table=True):
     precio_paquete: Decimal
     is_active: bool = Field(default=True)
 
-    # Relación hacia el padre
     destino: Optional[Destino] = Relationship(back_populates="paquetes")
 
-    # Relaciones hacia los hijos
     viajes: list["Viaje"] = Relationship(back_populates="paquete")
 
 
@@ -90,11 +83,9 @@ class Viaje(SQLModel, table=True):
     estatus: str
     is_active: bool = Field(default=True)
 
-    # Relaciones hacia los padres
     destino: Optional[Destino] = Relationship(back_populates="viajes")
     paquete: Optional[Paquete] = Relationship(back_populates="viajes")
 
-    # Relaciones hacia los hijos
     reservas: list["Reserva"] = Relationship(back_populates="viaje")
     costos: list["CostoViaje"] = Relationship(back_populates="viaje")
     inconvenientes: list["Inconveniente"] = Relationship(back_populates="viaje")
@@ -113,7 +104,6 @@ class Proceso(SQLModel, table=True):
     det_pro: Optional[str] = Field(default=None)
     act_pro: bool = Field(default=True)
 
-    # Relación hacia el padre
     usuario: Optional[Usuario] = Relationship(back_populates="procesos")
 
 
@@ -128,11 +118,9 @@ class Auditoria(SQLModel, table=True):
     fecha_hora: datetime = Field(default_factory=datetime.now)
     is_active: bool = Field(default=True)
 
-    # Relación hacia el padre
     usuario: Optional[Usuario] = Relationship(back_populates="auditorias")
 
 
-# TABLAS DE NIVEL 2
 class Reserva(SQLModel, table=True):
     __tablename__ = "reservas"
 
@@ -144,11 +132,9 @@ class Reserva(SQLModel, table=True):
     estatus_pago: str
     is_active: bool = Field(default=True)
 
-    # Relaciones hacia los padres
     cliente: Optional[Cliente] = Relationship(back_populates="reservas")
     viaje: Optional[Viaje] = Relationship(back_populates="reservas")
 
-    # Relaciones hacia los hijos
     pagos: list["Pago"] = Relationship(back_populates="reserva")
     integrantes: list["Integrante"] = Relationship(back_populates="reserva")
 
@@ -162,7 +148,6 @@ class CostoViaje(SQLModel, table=True):
     monto: Decimal
     is_active: bool = Field(default=True)
 
-    # Relación hacia el padre
     viaje: Optional[Viaje] = Relationship(back_populates="costos")
 
 
@@ -176,7 +161,6 @@ class Inconveniente(SQLModel, table=True):
     fecha_reporte: datetime = Field(default_factory=datetime.now)
     is_active: bool = Field(default=True)
 
-    # Relación hacia el padre
     viaje: Optional[Viaje] = Relationship(back_populates="inconvenientes")
 
 
@@ -192,11 +176,9 @@ class Ganancia(SQLModel, table=True):
     fecha_calculo: datetime = Field(default_factory=datetime.now)
     is_active: bool = Field(default=True)
 
-    # Relación hacia el padre
     viaje: Optional[Viaje] = Relationship(back_populates="ganancia")
 
 
-# TABLAS DE NIVEL 3
 class Pago(SQLModel, table=True):
     __tablename__ = "pagos"
 
@@ -208,7 +190,6 @@ class Pago(SQLModel, table=True):
     fecha_pago: datetime = Field(default_factory=datetime.now)
     is_active: bool = Field(default=True)
 
-    # Relación hacia el padre
     reserva: Optional[Reserva] = Relationship(back_populates="pagos")
 
 
@@ -226,5 +207,4 @@ class Integrante(SQLModel, table=True):
     numero_asiento: Optional[int] = Field(default=None)
     is_active: bool = Field(default=True)
 
-    # Relación hacia el padre
     reserva: Optional[Reserva] = Relationship(back_populates="integrantes")

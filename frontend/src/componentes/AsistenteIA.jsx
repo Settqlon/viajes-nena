@@ -42,7 +42,6 @@ export default function AsistenteIA({ seccionActiva = 'dashboard', onNavegar, on
     const [input, setInput] = useState('');
     const [cargando, setCargando] = useState(false);
 
-    // Estado del Cotizador Interactivo por Presupuesto
     const [presupuesto, setPresupuesto] = useState('300');
     const [adultos, setAdultos] = useState(2);
     const [ninos, setNinos] = useState(0);
@@ -66,7 +65,6 @@ export default function AsistenteIA({ seccionActiva = 'dashboard', onNavegar, on
             setRecomendaciones(data.recomendaciones || []);
             setApiKeyActiva(Boolean(data.api_key_configurada));
         } catch {
-            // Silencioso
         }
     };
 
@@ -85,7 +83,6 @@ export default function AsistenteIA({ seccionActiva = 'dashboard', onNavegar, on
             });
             setResultadoCotizacion(data);
         } catch {
-            // Error silencioso
         } finally {
             setCargandoCotizacion(false);
         }
