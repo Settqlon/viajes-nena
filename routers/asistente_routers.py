@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 from database.conexion import get_session
+from servicios.auth_servicio import verificar_personal, verificar_admin
 from servicios.asistente_servicios import (
     consultar_asistente,
     cotizar_por_presupuesto,
@@ -11,7 +12,11 @@ from servicios.asistente_servicios import (
     obtener_api_key_activa
 )
 
-router = APIRouter(prefix="/asistente", tags=["Asistente Comercial y Cotizador"])
+router = APIRouter(
+    prefix="/asistente",
+    tags=["Asistente Comercial y Cotizador"],
+    dependencies=[Depends(verificar_personal)]
+)
 
 
 class ChatRequest(BaseModel):
@@ -62,7 +67,7 @@ def conversar_con_asistente(datos: ChatRequest, session: Session = Depends(get_s
     )
 
 
-@router.post("/configurar-key")
+@router.post("/configurar-key", dependencies=[Depends(verificar_admin)])
 def guardar_api_key(datos: ApiKeyConfigRequest):
     configurar_api_key(datos.api_key)
     return {"ok": True, "api_key_configurada": bool(obtener_api_key_activa())}

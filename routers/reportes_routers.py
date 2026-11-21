@@ -1,3 +1,4 @@
+import unicodedata
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 from sqlmodel import Session
@@ -19,6 +20,7 @@ router = APIRouter(
 
 
 def _respuesta_archivo(contenido: bytes, nombre_archivo: str, formato: str) -> Response:
+    nombre_seguro = unicodedata.normalize("NFKD", nombre_archivo).encode("ascii", "ignore").decode("ascii")
     media_type = (
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         if formato.lower() == "excel"
@@ -28,7 +30,7 @@ def _respuesta_archivo(contenido: bytes, nombre_archivo: str, formato: str) -> R
         content=contenido,
         media_type=media_type,
         headers={
-            "Content-Disposition": f'attachment; filename="{nombre_archivo}"',
+            "Content-Disposition": f'attachment; filename="{nombre_seguro}"',
             "Access-Control-Expose-Headers": "Content-Disposition"
         }
     )

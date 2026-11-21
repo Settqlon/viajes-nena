@@ -8,7 +8,7 @@ from modelos.modelos import Usuario
 from esquemas.auth_esquemas import UsuarioCreate, UsuarioUpdate, UsuarioPut
 from servicios.auditoria_servicios import registrar_auditoria
 
-SECRET_KEY = "tu_clave_secreta_viajes_nena"
+SECRET_KEY = "viajes_la_nena_san_cristobal_tachira_2026_clave_segura"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
