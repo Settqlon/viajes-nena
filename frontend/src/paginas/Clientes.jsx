@@ -14,7 +14,7 @@ import { obtenerIntegrantes } from '../servicios/integrantesServicios';
 import {
     PageHeader, Buscador, EstadoActivo, BotonEditar, BotonBaja, Vacio, Badge, SelectorViaje, formatoMoneda, formatoFecha, mensajeError,
     BadgeDocumento, formatearDocumento, coincideBusquedaAvanzada, TIPOS_DOC_TITULAR, TIPOS_DOC_VIAJERO,
-    METODOS_PAGO, BadgeMetodoPago, CalculadoraDivisas, ModalLiquidarSaldo
+    METODOS_PAGO, BadgeMetodoPago, CalculadoraDivisas, ModalLiquidarSaldo, InputDocumento
 } from '../componentes/UI';
 import MapaAsientos from '../componentes/MapaAsientos';
 import { ABONO_POR_INTEGRANTE, calcularTarifaPorEdad } from '../servicios/tarifasServicios';
@@ -838,11 +838,11 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
 
                                     <div className="field">
                                         <label>{form.tipo_documento === 'Pasaporte' ? 'Nº de Pasaporte (titular)' : 'Cédula de Identidad (titular)'}</label>
-                                        <input
-                                            name="id_cliente"
-                                            value={form.id_cliente}
-                                            onChange={handleChange}
-                                            placeholder={form.tipo_documento === 'Pasaporte' ? 'P-12345678' : 'V-12345678'}
+                                        <InputDocumento
+                                            tipoDocumento={form.tipo_documento || 'Cédula'}
+                                            valor={form.id_cliente}
+                                            onChange={(nuevoDoc) => setForm(prev => ({ ...prev, id_cliente: nuevoDoc }))}
+                                            placeholder="12345678"
                                             required
                                         />
                                         {docRepetido && !clienteExistentePorDoc && (
@@ -1081,11 +1081,12 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                                             <label style={{ fontSize: '0.74rem' }}>
                                                 {borradorAcomp.tipo_documento === 'Sin Documento' ? 'Identificador' : 'Nº de Documento'}
                                             </label>
-                                            <input
-                                                placeholder={borradorAcomp.tipo_documento === 'Sin Documento' ? '(Autogenerado)' : 'V-12345678'}
-                                                value={borradorAcomp.tipo_documento === 'Sin Documento' ? '(Autogenerado al menor)' : borradorAcomp.documento_id}
+                                            <InputDocumento
+                                                tipoDocumento={borradorAcomp.tipo_documento || 'Cédula'}
+                                                valor={borradorAcomp.documento_id}
                                                 disabled={borradorAcomp.tipo_documento === 'Sin Documento'}
-                                                onChange={(e) => handleDocAcompChange(e.target.value)}
+                                                onChange={(nuevoDoc) => handleDocAcompChange(nuevoDoc)}
+                                                placeholder="12345678"
                                             />
                                         </div>
 

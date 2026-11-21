@@ -5,7 +5,7 @@ import { obtenerReservas } from '../servicios/reservasServicios';
 import { obtenerClientes } from '../servicios/clientesServicios';
 import {
     PageHeader, Buscador, EstadoActivo, BotonBaja, BotonEditar, Vacio, Badge, StatCard, formatoMoneda, formatoFecha, mensajeError,
-    METODOS_PAGO, BadgeMetodoPago, CalculadoraDivisas, ModalLiquidarSaldo, BotonesExportar
+    METODOS_PAGO, BadgeMetodoPago, CalculadoraDivisas, ModalLiquidarSaldo, BotonesExportar, InputDocumento
 } from '../componentes/UI';
 
 const FORM_INICIAL = { id_reserva: '', monto: '', metodo_pago: 'Transferencia', referencia: '' };
@@ -232,10 +232,12 @@ export default function Pagos({ esAdmin = true }) {
                                 </div>
                                 <div className="field">
                                     <label>Buscar por Cédula/Pasaporte del titular</label>
-                                    <input
-                                        value={documentoClienteForm}
-                                        onChange={(e) => buscarReservaPorDocumento(e.target.value)}
-                                        placeholder="Ej. V-10000000"
+                                    <InputDocumento
+                                        tipoDocumento="Cédula"
+                                        incluirPasaporte={true}
+                                        valor={documentoClienteForm}
+                                        onChange={(nuevoDoc) => buscarReservaPorDocumento(nuevoDoc)}
+                                        placeholder="10000000"
                                     />
                                 </div>
                                 <div className="field">

@@ -1237,3 +1237,68 @@ export function BotonesExportar({ ruta, nombreArchivo = 'Reporte_ViajesLaNena' }
         </div>
     );
 }
+
+const PREFIJOS_CEDULA = ['V-', 'E-', 'J-'];
+const PREFIJOS_PASAPORTE = ['P-', 'PAS-', 'E-'];
+
+export function InputDocumento({
+    tipoDocumento = 'Cédula',
+    valor = '',
+    onChange,
+    disabled = false,
+    required = false,
+    placeholder = '12345678',
+    incluirPasaporte = false
+}) {
+    if (tipoDocumento === 'Sin Documento') {
+        return <input value="(Autogenerado al menor)" disabled />;
+    }
+
+    const opciones = tipoDocumento === 'Pasaporte'
+        ? PREFIJOS_PASAPORTE
+        : (incluirPasaporte ? [...PREFIJOS_CEDULA, 'P-', 'PAS-'] : PREFIJOS_CEDULA);
+
+    const texto = String(valor || '');
+    const prefijoDetectado = opciones.find(p => texto.toUpperCase().startsWith(p));
+    const prefijoActual = prefijoDetectado || opciones[0];
+    const numeroActual = prefijoDetectado ? texto.slice(prefijoDetectado.length) : texto.replace(/^[A-Za-z]{1,4}-/, '');
+
+    const manejarCambioPrefijo = (nuevoPrefijo) => {
+        const limpio = numeroActual.trim();
+        onChange(limpio ? `${nuevoPrefijo}${limpio}` : '');
+    };
+
+    const manejarCambioNumero = (entrada) => {
+        const val = entrada.trimStart();
+        const matchPref = opciones.find(p => val.toUpperCase().startsWith(p));
+        if (matchPref) {
+            const resto = val.slice(matchPref.length);
+            onChange(resto ? `${matchPref}${resto}` : '');
+            return;
+        }
+        onChange(val ? `${prefijoActual}${val}` : '');
+    };
+
+    return (
+        <div style={{ display: 'flex', gap: 6, alignItems: 'stretch', width: '100%' }}>
+            <select
+                value={prefijoActual}
+                onChange={(e) => manejarCambioPrefijo(e.target.value)}
+                disabled={disabled}
+                style={{ width: 82, flexShrink: 0, fontWeight: 700, paddingLeft: 8, paddingRight: 4 }}
+            >
+                {opciones.map(p => (
+                    <option key={p} value={p}>{p}</option>
+                ))}
+            </select>
+            <input
+                value={numeroActual}
+                onChange={(e) => manejarCambioNumero(e.target.value)}
+                placeholder={placeholder}
+                disabled={disabled}
+                required={required}
+                style={{ flex: 1, minWidth: 0 }}
+            />
+        </div>
+    );
+}
