@@ -18,7 +18,7 @@ import Procesos from './paginas/Procesos';
 import Usuarios from './paginas/Usuarios';
 import Auditoria from './paginas/Auditoria';
 import AsistenteIA from './componentes/AsistenteIA';
-import { WidgetTasasTopBar } from './componentes/UI';
+import { WidgetTasasTopBar, CargadorGlobalSombrilla } from './componentes/UI';
 import { logout } from './servicios/authServicios';
 
 const INFO_ROLES = {
@@ -127,7 +127,12 @@ export default function App() {
     }, [rolEfectivo, seccionActiva, token]);
 
     if (!token) {
-        return <Login onLoginSuccess={() => setToken(localStorage.getItem('token'))} />;
+        return (
+            <>
+                <CargadorGlobalSombrilla />
+                <Login onLoginSuccess={() => setToken(localStorage.getItem('token'))} />
+            </>
+        );
     }
 
     const seccion = itemsPermitidos.find(s => s.id === seccionActiva) || itemsPermitidos[0] || TODAS[0];
@@ -135,6 +140,7 @@ export default function App() {
 
     return (
         <div className={`layout ${sidebarColapsado ? 'sidebar-collapsed' : ''}`}>
+            <CargadorGlobalSombrilla />
             <aside className={`sidebar ${sidebarColapsado ? 'collapsed' : ''}`}>
                 <div
                     className="brand"

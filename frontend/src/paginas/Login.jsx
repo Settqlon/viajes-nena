@@ -36,11 +36,7 @@ export default function Login({ onLoginSuccess }) {
                         manifiesto de abordaje y control financiero en tiempo real.
                     </p>
                 </div>
-                <div className="login-features">
-                    <div><strong>3</strong><span>Roles definidos</span></div>
-                    <div><strong>JWT</strong><span>Seguridad RBAC</span></div>
-                    <div><strong>24/7</strong><span>Tasas en vivo</span></div>
-                </div>
+                <div />
             </div>
 
             <div className="login-form-wrap">

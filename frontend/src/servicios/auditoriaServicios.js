@@ -10,12 +10,3 @@ export const obtenerAuditorias = async (filtros = {}) => {
     return response.data;
 };
 
-export const actualizarAuditoria = async (idAuditoria, datos) => {
-    const response = await api.patch(`/auditoria/${idAuditoria}`, datos);
-    return response.data;
-};
-
-export const eliminarAuditoria = async (idAuditoria) => {
-    const response = await api.delete(`/auditoria/${idAuditoria}`);
-    return response.data;
-};

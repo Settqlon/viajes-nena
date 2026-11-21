@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
-import { obtenerAuditorias, actualizarAuditoria, eliminarAuditoria } from '../servicios/auditoriaServicios';
+import { ShieldCheck } from 'lucide-react';
+import { obtenerAuditorias } from '../servicios/auditoriaServicios';
 import { obtenerUsuarios } from '../servicios/authServicios';
-import { PageHeader, Buscador, EstadoActivo, BotonBaja, Vacio, Badge, mensajeError, BotonesExportar } from '../componentes/UI';
+import { PageHeader, Buscador, Vacio, Badge, BotonesExportar, PantallaCarga } from '../componentes/UI';
 
 const TIPO_ACCION = { 'INSERT': 'success', 'UPDATE': 'warning', 'DELETE': 'danger' };
 
 export default function Auditoria() {
     const [auditorias, setAuditorias] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
+    const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
     const [accion, setAccion] = useState('');
     const [busqueda, setBusqueda] = useState('');
 
     const cargarAuditorias = async (filtro = accion) => {
+        setCargando(true);
         try {
             const [aData, uData] = await Promise.all([
                 obtenerAuditorias(filtro ? { accion: filtro } : {}),
@@ -22,6 +25,8 @@ export default function Auditoria() {
             setUsuarios(uData);
         } catch {
             setError('Error al obtener los registros de auditoría.');
+        } finally {
+            setCargando(false);
         }
     };
 
@@ -33,37 +38,19 @@ export default function Auditoria() {
         return u ? `${u.nombre} (${u.rol})` : `Usuario #${id}`;
     };
 
-    const handleEliminar = async (id) => {
-        if (confirm('¿Deseas dar de baja lógica este registro de auditoría? Podrás restaurarlo más adelante.')) {
-            try {
-                await eliminarAuditoria(id);
-                cargarAuditorias();
-            } catch (err) {
-                alert(mensajeError(err, 'No se pudo desactivar el registro.'));
-            }
-        }
-    };
-
-    const handleRestaurar = async (id) => {
-        try {
-            await actualizarAuditoria(id, { is_active: true });
-            cargarAuditorias();
-        } catch (err) {
-            alert(mensajeError(err, 'No se pudo restaurar el registro.'));
-        }
-    };
-
     const q = busqueda.trim().toLowerCase();
     const filtradas = auditorias.filter(a => {
         if (!q) return true;
         return `${a.id_auditoria} ${a.tabla_afectada} ${a.accion} ${a.detalles || ''} ${nombreUsuario(a.id_usuario)}`.toLowerCase().includes(q);
     });
 
+    if (cargando) return <PantallaCarga texto="Cargando bitácora inmutable de auditoría..." />;
+
     return (
         <div className="fade-in">
             <PageHeader
                 titulo="Auditoría y Trazabilidad del Sistema"
-                subtitulo="Bitácora inmutable de creaciones (INSERT), actualizaciones (UPDATE) y bajas lógicas (DELETE)"
+                subtitulo="Bitácora histórica de solo lectura: los registros de auditoría son inmutables y no admiten edición ni eliminación"
             >
                 <BotonesExportar ruta="/reportes/auditoria" nombreArchivo="Reporte_Auditoria_ViajesLaNena" />
             </PageHeader>
@@ -73,8 +60,11 @@ export default function Auditoria() {
             <div className="card">
                 <div className="card-header" style={{ flexWrap: 'wrap', gap: 12 }}>
                     <div>
-                        <div className="card-title">Registros de Auditoría ({filtradas.length})</div>
-                        <div className="card-sub">Trazabilidad completa de todas las tablas del sistema</div>
+                        <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <ShieldCheck size={18} color="#0ea5a4" />
+                            <span>Registros de Auditoría ({filtradas.length})</span>
+                        </div>
+                        <div className="card-sub">Trazabilidad inmutable de todas las operaciones del sistema (Solo lectura)</div>
                     </div>
 
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -112,27 +102,17 @@ export default function Auditoria() {
                                     <th>Usuario Responsable</th>
                                     <th>Fecha y Hora</th>
                                     <th>Detalles de la Operación</th>
-                                    <th>Estado</th>
-                                    <th style={{ textAlign: 'right' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filtradas.map((a) => (
-                                    <tr key={a.id_auditoria} className={a.is_active ? '' : 'inactive'}>
+                                    <tr key={a.id_auditoria}>
                                         <td><strong>#{a.id_auditoria}</strong></td>
                                         <td><Badge tipo={TIPO_ACCION[a.accion] || 'info'}>{a.accion}</Badge></td>
                                         <td className="cell-main">{a.tabla_afectada}</td>
                                         <td>{nombreUsuario(a.id_usuario)}</td>
                                         <td>{new Date(a.fecha_hora).toLocaleString('es-VE')}</td>
                                         <td>{a.detalles || '—'}</td>
-                                        <td><EstadoActivo activo={a.is_active} /></td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            <BotonBaja
-                                                activo={a.is_active}
-                                                onClick={() => handleEliminar(a.id_auditoria)}
-                                                onRestaurar={() => handleRestaurar(a.id_auditoria)}
-                                            />
-                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

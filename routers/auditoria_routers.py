@@ -3,16 +3,14 @@ from sqlmodel import Session
 from typing import Optional
 from datetime import datetime
 from database.conexion import get_session
-from esquemas.auditoria_esquemas import AuditoriaResponse, AuditoriaUpdate
+from esquemas.auditoria_esquemas import AuditoriaResponse
 from servicios.auth_servicio import verificar_admin
 from servicios.auditoria_servicios import (
     obtener_auditorias,
-    obtener_auditoria_por_id,
-    actualizar_auditoria,
-    desactivar_auditoria
+    obtener_auditoria_por_id
 )
 
-router = APIRouter(prefix="/auditoria", tags=["Auditoría del Sistema"])
+router = APIRouter(prefix="/auditoria", tags=["Auditoría del Sistema (Inmutable)"])
 
 
 @router.get("/", response_model=list[AuditoriaResponse], dependencies=[Depends(verificar_admin)])
@@ -29,12 +27,3 @@ def listar_auditorias(
 def obtener_auditoria(id_auditoria: int, session: Session = Depends(get_session)):
     return obtener_auditoria_por_id(session, id_auditoria)
 
-
-@router.patch("/{id_auditoria}", response_model=AuditoriaResponse, dependencies=[Depends(verificar_admin)])
-def modificar_auditoria(id_auditoria: int, datos: AuditoriaUpdate, session: Session = Depends(get_session)):
-    return actualizar_auditoria(session, id_auditoria, datos)
-
-
-@router.delete("/{id_auditoria}", response_model=AuditoriaResponse, dependencies=[Depends(verificar_admin)])
-def eliminar_auditoria_logica(id_auditoria: int, session: Session = Depends(get_session)):
-    return desactivar_auditoria(session, id_auditoria)

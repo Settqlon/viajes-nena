@@ -4,10 +4,10 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip, Legend
 } from 'recharts';
 import {
-    Wallet, CalendarCheck, Users, Plane, Trophy, TrendingUp, PiggyBank, Receipt, MapPin, Globe, Clock, AlertTriangle
+    Wallet, CalendarCheck, Users, Plane, Trophy, TrendingUp, PiggyBank, Receipt, MapPin, Globe, Clock, AlertTriangle, Sparkles
 } from 'lucide-react';
 import { obtenerResumenEstadisticas } from '../servicios/estadisticasServicios';
-import { StatCard, Badge, formatoMoneda, formatoFecha, Vacio, BotonesExportar } from '../componentes/UI';
+import { StatCard, Badge, formatoMoneda, formatoFecha, Vacio, BotonesExportar, PantallaCarga } from '../componentes/UI';
 
 const COLORES = ['#0ea5a4', '#6366f1', '#f97316', '#22c55e', '#f59e0b', '#ec4899', '#64748b'];
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -52,9 +52,13 @@ export default function Dashboard({ onNavegar }) {
     }, []);
 
     if (error) return <div className="alert alert-error">{error}</div>;
-    if (!datos) return <div className="empty">Cargando estadísticas...</div>;
+    if (!datos) return <PantallaCarga texto="Cargando estadísticas y análisis predictivo..." />;
 
-    const { kpis, viaje_mas_vendido: top } = datos;
+    const { kpis, viaje_mas_vendido: top, predicciones } = datos;
+    const seriePrediccion = (predicciones?.serie_proyeccion || []).map(p => ({
+        ...p,
+        mesLabel: p.es_futuro ? `${nombreMes(p.mes)} (Proy.)` : nombreMes(p.mes)
+    }));
 
     // Combina ingresos y reservas por mes en un solo arreglo
     const meses = {};
@@ -333,6 +337,117 @@ export default function Dashboard({ onNavegar }) {
                     </ResponsiveContainer>
                 </div>
             </div>
+
+            {/* Análisis Predictivo y Proyecciones a Futuro (IA) */}
+            {predicciones && (
+                <div className="card" style={{ marginTop: 22, border: '1.5px solid #99f6e4', background: 'linear-gradient(180deg, #f0fdfa 0%, #ffffff 42%)' }}>
+                    <div className="card-header" style={{ flexWrap: 'wrap', gap: 12 }}>
+                        <div>
+                            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#0f766e', fontSize: '1.08rem' }}>
+                                <Sparkles size={20} color="#0d9488" />
+                                <span>Análisis Predictivo y Proyecciones a Futuro (Próximo Trimestre)</span>
+                            </div>
+                            <div className="card-sub">
+                                Modelo de regresión lineal y estacionalidad sobre el histórico de reservas, ingresos y destinos de Viajes La Nena
+                            </div>
+                        </div>
+                        <Badge tipo="success">Tendencia proyectada: +{predicciones.crecimiento_estimado_pct}%</Badge>
+                    </div>
+
+                    <div className="grid grid-4" style={{ marginBottom: 18 }}>
+                        <div style={{ background: '#ffffff', border: '1px solid #ccfbf1', borderRadius: 12, padding: '14px 16px' }}>
+                            <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Ventas proyectadas (3 meses)</div>
+                            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f766e', marginTop: 4 }}>
+                                {formatoMoneda(predicciones.ventas_proyectadas_trimestre)}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#0d9488', marginTop: 4 }}>
+                                Estimación basada en tendencia mensual
+                            </div>
+                        </div>
+                        <div style={{ background: '#ffffff', border: '1px solid #ccfbf1', borderRadius: 12, padding: '14px 16px' }}>
+                            <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Ganancia neta esperada</div>
+                            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#15803d', marginTop: 4 }}>
+                                {formatoMoneda(predicciones.ganancia_proyectada_trimestre)}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: 4 }}>
+                                Descontando costos operativos promedio
+                            </div>
+                        </div>
+                        <div style={{ background: '#ffffff', border: '1px solid #ccfbf1', borderRadius: 12, padding: '14px 16px' }}>
+                            <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Demanda estimada de reservas</div>
+                            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#4338ca', marginTop: 4 }}>
+                                {predicciones.reservas_proyectadas_trimestre} grupos
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#6366f1', marginTop: 4 }}>
+                                Proyección de grupos familiares
+                            </div>
+                        </div>
+                        <div style={{ background: '#ffffff', border: '1px solid #ccfbf1', borderRadius: 12, padding: '14px 16px' }}>
+                            <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Destino con mayor proyección</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#c2410c', marginTop: 4 }}>
+                                {predicciones.destino_mayor_crecimiento}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#ea580c', marginTop: 4 }}>
+                                Alta ocupación esperada a futuro
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-3">
+                        <div className="card span-2" style={{ margin: 0, boxShadow: 'none', border: '1px solid #e2e8f0' }}>
+                            <div className="card-header">
+                                <div>
+                                    <div className="card-title">Curva de Proyección Futura de Ventas (Histórico vs. Predicción)</div>
+                                    <div className="card-sub">Comparativa entre meses consolidados y pronóstico de los próximos 4 meses</div>
+                                </div>
+                                <TrendingUp color="#0d9488" />
+                            </div>
+                            <ResponsiveContainer width="100%" height={240}>
+                                <AreaChart data={seriePrediccion}>
+                                    <defs>
+                                        <linearGradient id="gPred" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#0d9488" stopOpacity={0.35} />
+                                            <stop offset="100%" stopColor="#0d9488" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#eef1f6" vertical={false} />
+                                    <XAxis dataKey="mesLabel" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                                    <Tooltip formatter={tooltipMoneda} />
+                                    <Legend />
+                                    <Area type="monotone" dataKey="ventas_reales" name="Ventas Históricas" stroke="#6366f1" strokeWidth={2.5} fill="url(#gVentas)" />
+                                    <Area type="monotone" dataKey="ventas_proyectadas" name="Proyección a Futuro (IA)" stroke="#0d9488" strokeWidth={2.5} strokeDasharray="5 4" fill="url(#gPred)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        <div className="card" style={{ margin: 0, boxShadow: 'none', border: '1px solid #e2e8f0' }}>
+                            <div className="card-header">
+                                <div>
+                                    <div className="card-title">Pronóstico por Destino</div>
+                                    <div className="card-sub">Demanda futura estimada y recomendación</div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {(predicciones.destinos_futuros || []).map((df, i) => (
+                                    <div key={i} style={{ padding: '10px 12px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>{df.destino}</strong>
+                                            <Badge tipo="success">{df.tendencia}</Badge>
+                                        </div>
+                                        <div style={{ fontSize: '0.78rem', color: '#475569', marginTop: 4 }}>
+                                            Proyección: <strong>{df.reservas_proyectadas} reservas</strong> ({formatoMoneda(df.ingresos_proyectados)})
+                                        </div>
+                                        <div style={{ fontSize: '0.74rem', color: '#0f766e', fontWeight: 600, marginTop: 3 }}>
+                                            💡 {df.recomendacion}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

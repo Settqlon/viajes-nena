@@ -1,8 +1,98 @@
 import { useState, useEffect } from 'react';
-import { Inbox, Search, Trash, Pencil, RotateCcw, MapPin, Package, Calendar, Users, CheckCircle2, RefreshCw, Coins, ArrowRightLeft, DollarSign, Edit3, X, Check, Copy, CreditCard, FileSpreadsheet, FileText } from 'lucide-react';
+import { Inbox, Search, Trash, Pencil, RotateCcw, MapPin, Package, Calendar, Users, CheckCircle2, RefreshCw, Coins, ArrowRightLeft, DollarSign, Edit3, X, Check, Copy, CreditCard, FileSpreadsheet, FileText, Umbrella } from 'lucide-react';
+import { suscribirCarga } from '../servicios/api';
 import { obtenerTasas, guardarTasas, formatoBs, formatoCOP, calcularEquivalentes, obtenerTasasLocales } from '../servicios/tasasServicios';
 import { crearPago } from '../servicios/pagosServicios';
 import { descargarReporte } from '../servicios/reportesServicios';
+
+export function PantallaCarga({ texto = 'Cargando datos del sistema...', overlay = false }) {
+    return (
+        <div
+            className="umbrella-loader-wrap"
+            style={overlay ? {
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(15, 23, 42, 0.35)',
+                backdropFilter: 'blur(3px)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            } : {
+                padding: '64px 24px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 14
+            }}
+        >
+            <div
+                style={{
+                    background: '#ffffff',
+                    padding: overlay ? '26px 34px' : '22px 28px',
+                    borderRadius: 18,
+                    boxShadow: overlay ? '0 18px 40px rgba(15, 23, 42, 0.22)' : '0 4px 16px rgba(15, 23, 42, 0.06)',
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 12,
+                    textAlign: 'center'
+                }}
+            >
+                <div
+                    style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #ccfbf1 0%, #e0f2fe 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: 'inset 0 0 0 2px #5eead4'
+                    }}
+                >
+                    <Umbrella
+                        size={34}
+                        color="#0d9488"
+                        style={{ animation: 'spinUmbrella 1.35s linear infinite' }}
+                    />
+                </div>
+                <div style={{ fontWeight: 700, fontSize: '0.96rem', color: '#0f172a' }}>
+                    {texto}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                    Viajes La Nena • Procesando consulta...
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function CargadorGlobalSombrilla() {
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        let timer = null;
+        const desuscribir = suscribirCarga((activo) => {
+            if (activo) {
+                // Mostrar si la consulta tarda más de 180ms para que en PCs lentas siempre acompañe al usuario
+                timer = setTimeout(() => setVisible(true), 180);
+            } else {
+                if (timer) clearTimeout(timer);
+                setVisible(false);
+            }
+        });
+        return () => {
+            if (timer) clearTimeout(timer);
+            desuscribir();
+        };
+    }, []);
+
+    if (!visible) return null;
+    return <PantallaCarga texto="Consultando base de datos..." overlay={true} />;
+}
 
 export const formatoMoneda = (valor) =>
     '$' + Number(valor || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

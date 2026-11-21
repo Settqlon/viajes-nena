@@ -1,7 +1,6 @@
 from sqlmodel import Session, select
 from fastapi import HTTPException, status
 from modelos.modelos import Auditoria, Usuario
-from esquemas.auditoria_esquemas import AuditoriaUpdate
 from typing import Optional
 from datetime import datetime
 
@@ -53,21 +52,3 @@ def obtener_auditoria_por_id(session: Session, id_auditoria: int) -> Auditoria:
         )
     return auditoria
 
-
-def actualizar_auditoria(session: Session, id_auditoria: int, datos: AuditoriaUpdate) -> Auditoria:
-    auditoria = obtener_auditoria_por_id(session, id_auditoria)
-    for k, v in datos.model_dump(exclude_unset=True).items():
-        setattr(auditoria, k, v)
-    session.add(auditoria)
-    session.commit()
-    session.refresh(auditoria)
-    return auditoria
-
-
-def desactivar_auditoria(session: Session, id_auditoria: int) -> Auditoria:
-    auditoria = obtener_auditoria_por_id(session, id_auditoria)
-    auditoria.is_active = False
-    session.add(auditoria)
-    session.commit()
-    session.refresh(auditoria)
-    return auditoria
