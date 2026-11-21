@@ -7,7 +7,7 @@ import {
     Wallet, CalendarCheck, Users, Plane, Trophy, TrendingUp, PiggyBank, Receipt, MapPin, Globe, Clock, AlertTriangle
 } from 'lucide-react';
 import { obtenerResumenEstadisticas } from '../servicios/estadisticasServicios';
-import { StatCard, Badge, formatoMoneda, formatoFecha, Vacio } from '../componentes/UI';
+import { StatCard, Badge, formatoMoneda, formatoFecha, Vacio, BotonesExportar } from '../componentes/UI';
 
 const COLORES = ['#0ea5a4', '#6366f1', '#f97316', '#22c55e', '#f59e0b', '#ec4899', '#64748b'];
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -74,6 +74,7 @@ export default function Dashboard({ onNavegar }) {
                     <h1 className="page-title">Panel de Estadísticas</h1>
                     <p className="page-sub">Resumen del rendimiento de Viajes La Nena con los datos registrados en el sistema</p>
                 </div>
+                <BotonesExportar ruta="/reportes/financiero" nombreArchivo="Reporte_Ejecutivo_ViajesLaNena" />
             </div>
 
             {/* KPIs */}

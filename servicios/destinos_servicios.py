@@ -2,6 +2,8 @@ from sqlmodel import Session, select
 from fastapi import HTTPException, status
 from modelos.modelos import Destino
 from esquemas.destino_esquemas import DestinoCreate, DestinoUpdate, DestinoPut
+from servicios.auditoria_servicios import registrar_auditoria
+
 
 def crear_destino(session: Session, datos: DestinoCreate) -> Destino:
     nuevo_destino = Destino(
@@ -12,50 +14,79 @@ def crear_destino(session: Session, datos: DestinoCreate) -> Destino:
     session.add(nuevo_destino)
     session.commit()
     session.refresh(nuevo_destino)
+    registrar_auditoria(
+        session,
+        "destinos",
+        "INSERT",
+        f"Destino #{nuevo_destino.id_destino} creado: {nuevo_destino.nombre_destino} (${nuevo_destino.precio_base})"
+    )
     return nuevo_destino
+
 
 def obtener_destinos(session: Session) -> list[Destino]:
     return session.exec(select(Destino)).all()
+
 
 def obtener_destino_por_id(session: Session, id_destino: int) -> Destino:
     destino = session.get(Destino, id_destino)
     if not destino:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Destino no encontrado"
         )
     return destino
 
+
 def reemplazar_destino(session: Session, id_destino: int, datos: DestinoPut) -> Destino:
     destino = obtener_destino_por_id(session, id_destino)
-    
+
     destino.nombre_destino = datos.nombre_destino
     destino.descripcion = datos.descripcion
     destino.precio_base = datos.precio_base
     destino.is_active = datos.is_active
-    
+
     session.add(destino)
     session.commit()
     session.refresh(destino)
+    registrar_auditoria(
+        session,
+        "destinos",
+        "UPDATE",
+        f"Destino #{destino.id_destino} reemplazado: {destino.nombre_destino}"
+    )
     return destino
+
 
 def actualizar_destino(session: Session, id_destino: int, datos: DestinoUpdate) -> Destino:
     destino = obtener_destino_por_id(session, id_destino)
     datos_dict = datos.model_dump(exclude_unset=True)
-    
+
     for key, value in datos_dict.items():
         setattr(destino, key, value)
-        
+
     session.add(destino)
     session.commit()
     session.refresh(destino)
+    registrar_auditoria(
+        session,
+        "destinos",
+        "UPDATE",
+        f"Destino #{destino.id_destino} actualizado ({destino.nombre_destino}, Activo={destino.is_active})"
+    )
     return destino
+
 
 def desactivar_destino(session: Session, id_destino: int) -> Destino:
     destino = obtener_destino_por_id(session, id_destino)
     destino.is_active = False
-    
+
     session.add(destino)
     session.commit()
     session.refresh(destino)
+    registrar_auditoria(
+        session,
+        "destinos",
+        "DELETE",
+        f"Baja lógica de destino #{destino.id_destino} ({destino.nombre_destino})"
+    )
     return destino

@@ -11,7 +11,7 @@ import { obtenerPaquetes } from '../servicios/paquetesServicios';
 import { obtenerPagos } from '../servicios/pagosServicios';
 import {
     PageHeader, Buscador, Vacio, Badge, formatoFecha, formatoMoneda,
-    BadgeDocumento, ModalLiquidarSaldo
+    BadgeDocumento, ModalLiquidarSaldo, BotonesExportar
 } from '../componentes/UI';
 import { calcularTarifaPorEdad, obtenerPrecioBaseViaje } from '../servicios/tarifasServicios';
 import MapaAsientos from '../componentes/MapaAsientos';
@@ -170,6 +170,12 @@ export default function Integrantes() {
                 subtitulo="Lista oficial por viaje ordenada por número de puesto para choferes, guías y control de ruta"
             >
                 <div className="no-print" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {idViajeSeleccionado && (
+                        <BotonesExportar
+                            ruta={`/reportes/manifiesto/${idViajeSeleccionado}`}
+                            nombreArchivo={`Manifiesto_Viaje_${idViajeSeleccionado}`}
+                        />
+                    )}
                     <button
                         type="button"
                         className="btn btn-ghost"
@@ -183,7 +189,7 @@ export default function Integrantes() {
                         className="btn btn-primary"
                         onClick={imprimirManifiesto}
                     >
-                        <Printer size={16} /> Imprimir Manifiesto
+                        <Printer size={16} /> Imprimir
                     </button>
                 </div>
             </PageHeader>

@@ -10,7 +10,8 @@ import { obtenerClientes } from '../servicios/clientesServicios';
 import { obtenerCostosViaje, crearCostoViaje, actualizarCostoViaje, eliminarCostoViaje } from '../servicios/costosViajeServicios';
 import { obtenerInconvenientes, crearInconveniente, actualizarInconveniente, eliminarInconveniente } from '../servicios/inconvenientesServicios';
 import {
-    PageHeader, Vacio, Badge, formatoMoneda, formatoFecha, mensajeError, BotonEditar, ModalLiquidarSaldo
+    PageHeader, Vacio, Badge, formatoMoneda, formatoFecha, mensajeError,
+    BotonEditar, BotonBaja, EstadoActivo, ModalLiquidarSaldo, BotonesExportar
 } from '../componentes/UI';
 
 const FORM_COSTO_INICIAL = { descripcion: '', monto: '' };
@@ -85,10 +86,12 @@ export default function ControlFinanciero({ esAdmin = true, esOperador = false }
         .reduce((s, p) => s + Number(p.monto || 0), 0);
     const saldoPorCobrar = Math.max(ingresosTotales - ingresosCobrados, 0);
 
-    const costosViaje = costos.filter(c => c.is_active && c.id_viaje === vid);
+    const costosTodosViaje = costos.filter(c => c.id_viaje === vid);
+    const costosViaje = costosTodosViaje.filter(c => c.is_active);
     const costosTotales = costosViaje.reduce((s, c) => s + Number(c.monto || 0), 0);
 
-    const inconvenientesViaje = inconvenientes.filter(i => i.is_active && i.id_viaje === vid);
+    const inconvenientesTodosViaje = inconvenientes.filter(i => i.id_viaje === vid);
+    const inconvenientesViaje = inconvenientesTodosViaje.filter(i => i.is_active);
     const inconvenientesTotales = inconvenientesViaje.reduce((s, i) => s + Number(i.monto_descontado || 0), 0);
 
     const gananciaNeta = ingresosTotales - costosTotales - inconvenientesTotales;
@@ -186,24 +189,27 @@ export default function ControlFinanciero({ esAdmin = true, esOperador = false }
                 titulo="Control Financiero y Rentabilidad"
                 subtitulo="Supervisa ingresos por reservas, gastos operativos, incidencias en ruta y ganancia neta por viaje"
             >
-                {puedeGestionar && (
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        <button
-                            type="button"
-                            className="btn btn-ghost"
-                            onClick={abrirNuevoInc}
-                        >
-                            <TriangleAlert size={15} color="#d97706" /> Registrar Inconveniente
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={abrirNuevoCosto}
-                        >
-                            <Plus size={16} /> Registrar Costo Operativo
-                        </button>
-                    </div>
-                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <BotonesExportar ruta="/reportes/financiero" nombreArchivo="Reporte_Control_Financiero_ViajesLaNena" />
+                    {puedeGestionar && (
+                        <>
+                            <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={abrirNuevoInc}
+                            >
+                                <TriangleAlert size={15} color="#d97706" /> Registrar Inconveniente
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={abrirNuevoCosto}
+                            >
+                                <Plus size={16} /> Registrar Costo Operativo
+                            </button>
+                        </>
+                    )}
+                </div>
             </PageHeader>
 
             {error && <div className="alert alert-error">{error}</div>}
@@ -417,7 +423,7 @@ export default function ControlFinanciero({ esAdmin = true, esOperador = false }
                                         </button>
                                     )}
                                 </div>
-                                {costosViaje.length === 0 ? <Vacio texto="No hay costos operativos registrados en este viaje aún" /> : (
+                                {costosTodosViaje.length === 0 ? <Vacio texto="No hay costos operativos registrados en este viaje aún" /> : (
                                     <div className="table-wrap">
                                         <table className="table">
                                             <thead>
@@ -425,35 +431,36 @@ export default function ControlFinanciero({ esAdmin = true, esOperador = false }
                                                     <th>ID</th>
                                                     <th>Concepto</th>
                                                     <th>Monto</th>
+                                                    <th>Estado</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {costosViaje.map(c => (
-                                                    <tr key={c.id_costo}>
+                                                {costosTodosViaje.map(c => (
+                                                    <tr key={c.id_costo} className={c.is_active ? '' : 'inactive'}>
                                                         <td>#{c.id_costo}</td>
                                                         <td className="cell-main">{c.descripcion}</td>
                                                         <td className="money" style={{ color: '#b91c1c', fontWeight: 700 }}>
                                                             {formatoMoneda(c.monto)}
                                                         </td>
+                                                        <td><EstadoActivo activo={c.is_active} /></td>
                                                         <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                                                             {puedeGestionar && (
                                                                 <div style={{ display: 'inline-flex', gap: 6 }}>
                                                                     <BotonEditar onClick={() => iniciarEdicionCosto(c)} />
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-danger-soft"
-                                                                        style={{ padding: '4px 8px' }}
-                                                                        title="Eliminar costo"
+                                                                    <BotonBaja
+                                                                        activo={c.is_active}
                                                                         onClick={async () => {
-                                                                            if (confirm('¿Eliminar este costo operativo?')) {
+                                                                            if (confirm('¿Dar de baja este costo operativo? Podrás restaurarlo más adelante.')) {
                                                                                 await eliminarCostoViaje(c.id_costo);
                                                                                 cargarDatos();
                                                                             }
                                                                         }}
-                                                                    >
-                                                                        <Trash size={13} />
-                                                                    </button>
+                                                                        onRestaurar={async () => {
+                                                                            await actualizarCostoViaje(c.id_costo, { is_active: true });
+                                                                            cargarDatos();
+                                                                        }}
+                                                                    />
                                                                 </div>
                                                             )}
                                                         </td>
@@ -482,7 +489,7 @@ export default function ControlFinanciero({ esAdmin = true, esOperador = false }
                                         </button>
                                     )}
                                 </div>
-                                {inconvenientesViaje.length === 0 ? <Vacio texto="No hay inconvenientes reportados para este viaje" /> : (
+                                {inconvenientesTodosViaje.length === 0 ? <Vacio texto="No hay inconvenientes reportados para este viaje" /> : (
                                     <div className="table-wrap">
                                         <table className="table">
                                             <thead>
@@ -491,36 +498,37 @@ export default function ControlFinanciero({ esAdmin = true, esOperador = false }
                                                     <th>Descripción</th>
                                                     <th>Fecha Reporte</th>
                                                     <th>Monto Descontado</th>
+                                                    <th>Estado</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {inconvenientesViaje.map(i => (
-                                                    <tr key={i.id_inconveniente}>
+                                                {inconvenientesTodosViaje.map(i => (
+                                                    <tr key={i.id_inconveniente} className={i.is_active ? '' : 'inactive'}>
                                                         <td>#{i.id_inconveniente}</td>
                                                         <td className="cell-main">{i.descripcion}</td>
                                                         <td>{formatoFecha(i.fecha_reporte)}</td>
                                                         <td className="money" style={{ color: '#d97706', fontWeight: 700 }}>
                                                             {formatoMoneda(i.monto_descontado)}
                                                         </td>
+                                                        <td><EstadoActivo activo={i.is_active} /></td>
                                                         <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                                                             {puedeGestionar && (
                                                                 <div style={{ display: 'inline-flex', gap: 6 }}>
                                                                     <BotonEditar onClick={() => iniciarEdicionInc(i)} />
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-danger-soft"
-                                                                        style={{ padding: '4px 8px' }}
-                                                                        title="Eliminar inconveniente"
+                                                                    <BotonBaja
+                                                                        activo={i.is_active}
                                                                         onClick={async () => {
-                                                                            if (confirm('¿Eliminar este reporte?')) {
+                                                                            if (confirm('¿Dar de baja este reporte de inconveniente? Podrás restaurarlo más adelante.')) {
                                                                                 await eliminarInconveniente(i.id_inconveniente);
                                                                                 cargarDatos();
                                                                             }
                                                                         }}
-                                                                    >
-                                                                        <Trash size={13} />
-                                                                    </button>
+                                                                        onRestaurar={async () => {
+                                                                            await actualizarInconveniente(i.id_inconveniente, { is_active: true });
+                                                                            cargarDatos();
+                                                                        }}
+                                                                    />
                                                                 </div>
                                                             )}
                                                         </td>

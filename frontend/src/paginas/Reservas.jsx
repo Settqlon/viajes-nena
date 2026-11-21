@@ -12,7 +12,7 @@ import { obtenerIntegrantes } from '../servicios/integrantesServicios';
 import { obtenerPagos } from '../servicios/pagosServicios';
 import {
     PageHeader, Buscador, EstadoActivo, BotonBaja, Vacio, Badge, formatoMoneda, formatoFecha, mensajeError,
-    BadgeDocumento, ModalLiquidarSaldo
+    BadgeDocumento, ModalLiquidarSaldo, BotonesExportar
 } from '../componentes/UI';
 import { calcularTarifaPorEdad, obtenerPrecioBaseViaje } from '../servicios/tarifasServicios';
 import MapaAsientos from '../componentes/MapaAsientos';
@@ -149,14 +149,17 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
                 titulo="Control de Reservaciones"
                 subtitulo="Supervisa estados de pago, emite comprobantes, liquida saldos y consulta manifiestos"
             >
-                <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                        if (onIrAClientes) onIrAClientes();
-                    }}
-                >
-                    <Plus size={16} /> Nueva Reserva
-                </button>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <BotonesExportar ruta="/reportes/reservas" nombreArchivo="Reporte_Reservaciones_ViajesLaNena" />
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => {
+                            if (onIrAClientes) onIrAClientes();
+                        }}
+                    >
+                        <Plus size={16} /> Nueva Reserva
+                    </button>
+                </div>
             </PageHeader>
 
             {error && <div className="alert alert-error">{error}</div>}

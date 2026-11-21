@@ -5,7 +5,7 @@ import { obtenerReservas } from '../servicios/reservasServicios';
 import { obtenerClientes } from '../servicios/clientesServicios';
 import {
     PageHeader, Buscador, EstadoActivo, BotonBaja, BotonEditar, Vacio, Badge, StatCard, formatoMoneda, formatoFecha, mensajeError,
-    METODOS_PAGO, BadgeMetodoPago, CalculadoraDivisas, ModalLiquidarSaldo
+    METODOS_PAGO, BadgeMetodoPago, CalculadoraDivisas, ModalLiquidarSaldo, BotonesExportar
 } from '../componentes/UI';
 
 const FORM_INICIAL = { id_reserva: '', monto: '', metodo_pago: 'Transferencia', referencia: '' };
@@ -183,12 +183,17 @@ export default function Pagos({ esAdmin = true }) {
                 titulo={mostrarForm ? (idEditando ? `Editar Pago #${idEditando}` : 'Registrar Pago o Abono') : 'Pagos y Cobranzas'}
                 subtitulo={mostrarForm ? 'Completa los datos del abono o liquidación de reserva' : 'Control de cobros, saldos por liquidar e historial de transacciones'}
             >
-                <button
-                    className={mostrarForm ? 'btn btn-ghost' : 'btn btn-primary'}
-                    onClick={() => mostrarForm ? cancelarFormulario() : setMostrarForm(true)}
-                >
-                    {mostrarForm ? <><ArrowLeft size={16} /> Volver a Pagos</> : <><Plus size={16} /> Registrar Pago</>}
-                </button>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {!mostrarForm && (
+                        <BotonesExportar ruta="/reportes/pagos" nombreArchivo="Reporte_Pagos_ViajesLaNena" />
+                    )}
+                    <button
+                        className={mostrarForm ? 'btn btn-ghost' : 'btn btn-primary'}
+                        onClick={() => mostrarForm ? cancelarFormulario() : setMostrarForm(true)}
+                    >
+                        {mostrarForm ? <><ArrowLeft size={16} /> Volver a Pagos</> : <><Plus size={16} /> Registrar Pago</>}
+                    </button>
+                </div>
             </PageHeader>
 
             {error && <div className="alert alert-error">{error}</div>}

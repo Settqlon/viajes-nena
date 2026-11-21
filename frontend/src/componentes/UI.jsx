@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Inbox, Search, Trash, Pencil, RotateCcw, MapPin, Package, Calendar, Users, CheckCircle2, RefreshCw, Coins, ArrowRightLeft, DollarSign, Edit3, X, Check, Copy, CreditCard } from 'lucide-react';
+import { Inbox, Search, Trash, Pencil, RotateCcw, MapPin, Package, Calendar, Users, CheckCircle2, RefreshCw, Coins, ArrowRightLeft, DollarSign, Edit3, X, Check, Copy, CreditCard, FileSpreadsheet, FileText } from 'lucide-react';
 import { obtenerTasas, guardarTasas, formatoBs, formatoCOP, calcularEquivalentes, obtenerTasasLocales } from '../servicios/tasasServicios';
 import { crearPago } from '../servicios/pagosServicios';
+import { descargarReporte } from '../servicios/reportesServicios';
 
 export const formatoMoneda = (valor) =>
     '$' + Number(valor || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1095,6 +1096,47 @@ export function ModalLiquidarSaldo({ infoReserva, abierto, onCerrar, onLiquidado
                     </div>
                 </form>
             </div>
+        </div>
+    );
+}
+
+export function BotonesExportar({ ruta, nombreArchivo = 'Reporte_ViajesLaNena' }) {
+    const [descargando, setDescargando] = useState(null);
+
+    const handleDescargar = async (formato) => {
+        if (!ruta || descargando) return;
+        setDescargando(formato);
+        try {
+            await descargarReporte(ruta, formato, nombreArchivo);
+        } catch {
+            alert(`No se pudo generar el reporte en ${formato.toUpperCase()}.`);
+        } finally {
+            setDescargando(null);
+        }
+    };
+
+    return (
+        <div className="no-print" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+            <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => handleDescargar('excel')}
+                disabled={!!descargando}
+                title="Descargar reporte en Excel (.xlsx)"
+                style={{ color: '#15803d', borderColor: '#86efac', fontWeight: 700, padding: '7px 11px', fontSize: '0.8rem' }}
+            >
+                <FileSpreadsheet size={15} /> {descargando === 'excel' ? 'Generando...' : 'Excel (.xlsx)'}
+            </button>
+            <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => handleDescargar('pdf')}
+                disabled={!!descargando}
+                title="Descargar reporte oficial en PDF (.pdf)"
+                style={{ color: '#b91c1c', borderColor: '#fca5a5', fontWeight: 700, padding: '7px 11px', fontSize: '0.8rem' }}
+            >
+                <FileText size={15} /> {descargando === 'pdf' ? 'Generando...' : 'PDF (.pdf)'}
+            </button>
         </div>
     );
 }

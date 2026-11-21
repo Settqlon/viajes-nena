@@ -6,6 +6,7 @@ import jwt
 from datetime import datetime, timedelta
 from modelos.modelos import Usuario
 from esquemas.auth_esquemas import UsuarioCreate, UsuarioUpdate, UsuarioPut
+from servicios.auditoria_servicios import registrar_auditoria
 
 SECRET_KEY = "tu_clave_secreta_viajes_nena"
 ALGORITHM = "HS256"
@@ -102,6 +103,13 @@ def crear_nuevo_usuario(session: Session, nuevo_usuario: UsuarioCreate) -> Usuar
     session.add(usuario_db)
     session.commit()
     session.refresh(usuario_db)
+    registrar_auditoria(
+        session,
+        "usuarios",
+        "INSERT",
+        f"Usuario #{usuario_db.id_usuario} creado: {usuario_db.nombre} ({usuario_db.correo_electronico}, Rol={usuario_db.rol})",
+        id_usuario=usuario_db.id_usuario
+    )
     return usuario_db
 
 def reemplazar_usuario(session: Session, id_usuario: int, datos: UsuarioPut) -> Usuario:
@@ -118,6 +126,12 @@ def reemplazar_usuario(session: Session, id_usuario: int, datos: UsuarioPut) -> 
     session.add(usuario)
     session.commit()
     session.refresh(usuario)
+    registrar_auditoria(
+        session,
+        "usuarios",
+        "UPDATE",
+        f"Usuario #{usuario.id_usuario} reemplazado: {usuario.nombre} ({usuario.rol})"
+    )
     return usuario
 
 def actualizar_usuario(session: Session, id_usuario: int, datos: UsuarioUpdate) -> Usuario:
@@ -136,6 +150,12 @@ def actualizar_usuario(session: Session, id_usuario: int, datos: UsuarioUpdate) 
     session.add(usuario)
     session.commit()
     session.refresh(usuario)
+    registrar_auditoria(
+        session,
+        "usuarios",
+        "UPDATE",
+        f"Usuario #{usuario.id_usuario} actualizado ({usuario.nombre}, Rol={usuario.rol}, Activo={usuario.is_active})"
+    )
     return usuario
 
 def desactivar_usuario(session: Session, id_usuario: int) -> Usuario:
@@ -148,4 +168,10 @@ def desactivar_usuario(session: Session, id_usuario: int) -> Usuario:
     session.add(usuario)
     session.commit()
     session.refresh(usuario)
+    registrar_auditoria(
+        session,
+        "usuarios",
+        "DELETE",
+        f"Baja lógica de usuario #{usuario.id_usuario} ({usuario.nombre})"
+    )
     return usuario
