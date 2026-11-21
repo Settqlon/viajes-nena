@@ -579,26 +579,49 @@ def generar_reporte_auditoria(session: Session, formato: str = "pdf") -> tuple[b
     auditorias = session.exec(select(Auditoria).order_by(Auditoria.fecha_hora.desc())).all()
     usuarios = {u.id_usuario: u.nombre for u in session.exec(select(Usuario)).all()}
 
-    columnas = ["ID", "Fecha y Hora", "Tabla Afectada", "Acción", "Usuario Responsable", "Detalle de la Operación"]
+    mapa_accion = {
+        "INSERT": "Nuevo registro",
+        "UPDATE": "Modificación",
+        "DELETE": "Desactivación",
+        "EXPORT": "Descarga de reporte"
+    }
+    mapa_modulo = {
+        "clientes": "Clientes",
+        "destinos": "Destinos Turísticos",
+        "paquetes": "Paquetes Turísticos",
+        "viajes": "Viajes Programados",
+        "reservas": "Reservas",
+        "pagos": "Pagos y Cobranzas",
+        "integrantes": "Pasajeros / Manifiesto",
+        "costos_viaje": "Costos Operativos",
+        "inconvenientes": "Inconvenientes en Ruta",
+        "ganancias": "Ganancias",
+        "procesos": "Procesos Operativos",
+        "usuarios": "Usuarios y Roles",
+        "auditoria": "Auditoría",
+        "reportes": "Reportes"
+    }
+
+    columnas = ["N.°", "Fecha y Hora", "Módulo del Sistema", "Tipo de Movimiento", "Realizado por", "Descripción de la Actividad"]
     filas = []
 
     for a in auditorias:
         filas.append([
             f"#{a.id_auditoria}",
             a.fecha_hora.strftime("%d/%m/%Y %H:%M:%S"),
-            a.tabla_afectada,
-            a.accion,
+            mapa_modulo.get((a.tabla_afectada or "").lower(), a.tabla_afectada),
+            mapa_accion.get(a.accion, a.accion),
             usuarios.get(a.id_usuario, f"Usuario #{a.id_usuario}"),
             a.detalles
         ])
 
-    titulo = "Bitácora Oficial de Auditoría y Trazabilidad del Sistema"
-    subtitulo = "Registro inmutable de inserciones (INSERT), actualizaciones (UPDATE) y bajas lógicas (DELETE)"
+    titulo = "Historial Oficial de Actividades y Auditoría del Sistema"
+    subtitulo = "Registro permanente de nuevos registros, modificaciones y desactivaciones realizadas por el personal"
     kpis = [
-        ("Total Eventos", str(len(auditorias))),
-        ("Creaciones (INSERT)", str(sum(1 for a in auditorias if a.accion == "INSERT"))),
-        ("Ediciones (UPDATE)", str(sum(1 for a in auditorias if a.accion == "UPDATE"))),
-        ("Bajas Lógicas (DELETE)", str(sum(1 for a in auditorias if a.accion == "DELETE")))
+        ("Total Movimientos", str(len(auditorias))),
+        ("Nuevos Registros", str(sum(1 for a in auditorias if a.accion == "INSERT"))),
+        ("Modificaciones", str(sum(1 for a in auditorias if a.accion == "UPDATE"))),
+        ("Desactivaciones", str(sum(1 for a in auditorias if a.accion == "DELETE")))
     ]
 
     if formato.lower() == "excel":

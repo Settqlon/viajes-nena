@@ -4,7 +4,49 @@ import { obtenerAuditorias } from '../servicios/auditoriaServicios';
 import { obtenerUsuarios } from '../servicios/authServicios';
 import { PageHeader, Buscador, Vacio, Badge, BotonesExportar, PantallaCarga } from '../componentes/UI';
 
-const TIPO_ACCION = { 'INSERT': 'success', 'UPDATE': 'warning', 'DELETE': 'danger' };
+const TIPO_ACCION = {
+    'INSERT': 'success',
+    'UPDATE': 'warning',
+    'DELETE': 'danger',
+    'Creación': 'success',
+    'Modificación': 'warning',
+    'Desactivación': 'danger',
+    'Exportación': 'info'
+};
+
+const ETIQUETA_ACCION = {
+    'INSERT': 'Nuevo registro',
+    'UPDATE': 'Modificación',
+    'DELETE': 'Desactivación',
+    'EXPORT': 'Descarga de reporte'
+};
+
+const ETIQUETA_MODULO = {
+    'clientes': 'Clientes',
+    'destinos': 'Destinos Turísticos',
+    'paquetes': 'Paquetes Turísticos',
+    'viajes': 'Viajes Programados',
+    'reservas': 'Reservas',
+    'pagos': 'Pagos y Cobranzas',
+    'integrantes': 'Pasajeros / Manifiesto',
+    'costos_viaje': 'Costos Operativos',
+    'inconvenientes': 'Inconvenientes en Ruta',
+    'ganancias': 'Ganancias',
+    'procesos': 'Procesos Operativos',
+    'usuarios': 'Usuarios y Roles',
+    'auditoria': 'Auditoría',
+    'reportes': 'Reportes'
+};
+
+const FILTROS_ACCION = [
+    { valor: '', etiqueta: 'Todas las operaciones' },
+    { valor: 'INSERT', etiqueta: 'Nuevos registros' },
+    { valor: 'UPDATE', etiqueta: 'Modificaciones' },
+    { valor: 'DELETE', etiqueta: 'Desactivaciones' }
+];
+
+const traducirAccion = (acc) => ETIQUETA_ACCION[acc] || acc;
+const traducirModulo = (tabla) => ETIQUETA_MODULO[(tabla || '').toLowerCase()] || tabla;
 
 export default function Auditoria() {
     const [auditorias, setAuditorias] = useState([]);
@@ -41,16 +83,16 @@ export default function Auditoria() {
     const q = busqueda.trim().toLowerCase();
     const filtradas = auditorias.filter(a => {
         if (!q) return true;
-        return `${a.id_auditoria} ${a.tabla_afectada} ${a.accion} ${a.detalles || ''} ${nombreUsuario(a.id_usuario)}`.toLowerCase().includes(q);
+        return `${a.id_auditoria} ${a.tabla_afectada} ${traducirModulo(a.tabla_afectada)} ${a.accion} ${traducirAccion(a.accion)} ${a.detalles || ''} ${nombreUsuario(a.id_usuario)}`.toLowerCase().includes(q);
     });
 
-    if (cargando) return <PantallaCarga texto="Cargando bitácora inmutable de auditoría..." />;
+    if (cargando) return <PantallaCarga texto="Cargando historial de actividades..." />;
 
     return (
         <div className="fade-in">
             <PageHeader
-                titulo="Auditoría y Trazabilidad del Sistema"
-                subtitulo="Bitácora histórica de solo lectura: los registros de auditoría son inmutables y no admiten edición ni eliminación"
+                titulo="Historial de Actividades y Auditoría"
+                subtitulo="Registro histórico de solo lectura de todos los movimientos realizados en el sistema"
             >
                 <BotonesExportar ruta="/reportes/auditoria" nombreArchivo="Reporte_Auditoria_ViajesLaNena" />
             </PageHeader>
@@ -62,54 +104,54 @@ export default function Auditoria() {
                     <div>
                         <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <ShieldCheck size={18} color="#0ea5a4" />
-                            <span>Registros de Auditoría ({filtradas.length})</span>
+                            <span>Movimientos Registrados ({filtradas.length})</span>
                         </div>
-                        <div className="card-sub">Trazabilidad inmutable de todas las operaciones del sistema (Solo lectura)</div>
+                        <div className="card-sub">Historial permanente de operaciones (No se puede editar ni eliminar)</div>
                     </div>
 
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                         <div className="viaje-destino-pills">
-                            {['', 'INSERT', 'UPDATE', 'DELETE'].map(act => (
+                            {FILTROS_ACCION.map(f => (
                                 <button
-                                    key={act || 'ALL'}
+                                    key={f.valor || 'ALL'}
                                     type="button"
-                                    className={`viaje-pill ${accion === act ? 'active' : ''}`}
+                                    className={`viaje-pill ${accion === f.valor ? 'active' : ''}`}
                                     onClick={() => {
-                                        setAccion(act);
-                                        cargarAuditorias(act);
+                                        setAccion(f.valor);
+                                        cargarAuditorias(f.valor);
                                     }}
                                 >
-                                    {act || 'Todas'}
+                                    {f.etiqueta}
                                 </button>
                             ))}
                         </div>
                         <Buscador
                             valor={busqueda}
                             onChange={setBusqueda}
-                            placeholder="Buscar por tabla, usuario o detalle..."
+                            placeholder="Buscar por módulo, usuario o detalle..."
                         />
                     </div>
                 </div>
 
-                {filtradas.length === 0 ? <Vacio texto="No hay registros de auditoría para mostrar" /> : (
+                {filtradas.length === 0 ? <Vacio texto="No hay movimientos registrados para mostrar" /> : (
                     <div className="table-wrap">
                         <table className="table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Acción</th>
-                                    <th>Tabla</th>
-                                    <th>Usuario Responsable</th>
+                                    <th>N.°</th>
+                                    <th>Tipo de Movimiento</th>
+                                    <th>Módulo del Sistema</th>
+                                    <th>Realizado por</th>
                                     <th>Fecha y Hora</th>
-                                    <th>Detalles de la Operación</th>
+                                    <th>Descripción de la Actividad</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filtradas.map((a) => (
                                     <tr key={a.id_auditoria}>
                                         <td><strong>#{a.id_auditoria}</strong></td>
-                                        <td><Badge tipo={TIPO_ACCION[a.accion] || 'info'}>{a.accion}</Badge></td>
-                                        <td className="cell-main">{a.tabla_afectada}</td>
+                                        <td><Badge tipo={TIPO_ACCION[a.accion] || 'info'}>{traducirAccion(a.accion)}</Badge></td>
+                                        <td className="cell-main">{traducirModulo(a.tabla_afectada)}</td>
                                         <td>{nombreUsuario(a.id_usuario)}</td>
                                         <td>{new Date(a.fecha_hora).toLocaleString('es-VE')}</td>
                                         <td>{a.detalles || '—'}</td>
