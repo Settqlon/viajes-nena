@@ -3,6 +3,7 @@ import { Plus, X, CreditCard, Wallet, AlertCircle, DollarSign, ChevronDown, Chev
 import { obtenerPagos, crearPago, actualizarPago, eliminarPago } from '../servicios/pagosServicios';
 import { obtenerReservas } from '../servicios/reservasServicios';
 import { obtenerClientes } from '../servicios/clientesServicios';
+import { obtenerIntegrantes } from '../servicios/integrantesServicios';
 import {
     PageHeader, Buscador, EstadoActivo, BotonBaja, BotonEditar, Vacio, Badge, StatCard, formatoMoneda, formatoFecha, mensajeError,
     METODOS_PAGO, BadgeMetodoPago, CalculadoraDivisas, ModalLiquidarSaldo, BotonesExportar, InputDocumento
@@ -14,6 +15,7 @@ export default function Pagos({ esAdmin = true }) {
     const [pagos, setPagos] = useState([]);
     const [reservas, setReservas] = useState([]);
     const [clientes, setClientes] = useState([]);
+    const [integrantes, setIntegrantes] = useState([]);
     const [error, setError] = useState('');
     const [exito, setExito] = useState('');
     const [mostrarForm, setMostrarForm] = useState(false);
@@ -27,14 +29,16 @@ export default function Pagos({ esAdmin = true }) {
 
     const cargarDatos = async () => {
         try {
-            const [pData, rData, cData] = await Promise.all([
+            const [pData, rData, cData, iData] = await Promise.all([
                 obtenerPagos(),
                 obtenerReservas(),
-                obtenerClientes()
+                obtenerClientes(),
+                obtenerIntegrantes()
             ]);
             setPagos(pData);
             setReservas(rData);
             setClientes(cData);
+            setIntegrantes(iData);
         } catch {
             setError('Error al obtener la lista de pagos.');
         }
@@ -74,7 +78,13 @@ export default function Pagos({ esAdmin = true }) {
     const buscarReservaPorDocumento = (doc) => {
         setDocumentoClienteForm(doc);
         const limpio = doc.trim().toLowerCase();
-        const encontrada = reservas.find(r => r.is_active && r.id_cliente.toLowerCase() === limpio);
+        let encontrada = reservas.find(r => r.is_active && r.id_cliente.toLowerCase() === limpio);
+        if (!encontrada && limpio) {
+            const integ = integrantes.find(i => i.is_active && (i.documento_id || '').toLowerCase() === limpio);
+            if (integ) {
+                encontrada = reservas.find(r => r.is_active && r.id_reserva === integ.id_reserva);
+            }
+        }
         if (encontrada) {
             seleccionarReservaParaPago(encontrada.id_reserva, true);
         }
@@ -167,9 +177,15 @@ export default function Pagos({ esAdmin = true }) {
         const doc = documentoClienteDeReserva(p.id_reserva);
         const cli = obtenerCliente(doc);
         const nombreCli = cli ? `${cli.nombre} ${cli.apellido}` : '';
+        const acompMatch = integrantes
+            .filter(i => i.is_active && i.id_reserva === p.id_reserva)
+            .map(i => `${i.nombre || ''} ${i.apellido || ''} ${i.documento_id || ''}`)
+            .join(' ')
+            .toLowerCase();
         return (
             doc.toLowerCase().includes(q) ||
             nombreCli.toLowerCase().includes(q) ||
+            acompMatch.includes(q) ||
             (p.referencia || '').toLowerCase().includes(q) ||
             String(p.id_reserva).includes(q)
         );

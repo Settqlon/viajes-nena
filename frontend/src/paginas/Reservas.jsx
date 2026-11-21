@@ -134,7 +134,9 @@ export default function Reservas({ esAdmin = true, esOperador = false, esVendedo
 
         if (!q) return true;
 
-        const strMatch = `${r.id_reserva} ${r.id_cliente} ${cli?.nombre || ''} ${cli?.apellido || ''} ${dest?.nombre_destino || ''} ${cli?.telefono || ''}`.toLowerCase();
+        const intsR = integrantes.filter(i => i.is_active && i.id_reserva === r.id_reserva);
+        const acompMatch = intsR.map(i => `${i.nombre || ''} ${i.apellido || ''} ${i.documento_id || ''}`).join(' ');
+        const strMatch = `${r.id_reserva} ${r.id_cliente} ${cli?.nombre || ''} ${cli?.apellido || ''} ${dest?.nombre_destino || ''} ${cli?.telefono || ''} ${acompMatch}`.toLowerCase();
         return strMatch.includes(q);
     });
 
