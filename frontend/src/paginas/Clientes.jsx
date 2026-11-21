@@ -67,6 +67,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
     const [asignarViajeAhora, setAsignarViajeAhora] = useState(true);
     const [clienteExistenteReserva, setClienteExistenteReserva] = useState(null);
     const [idViaje, setIdViaje] = useState('');
+    const [titularViaja, setTitularViaja] = useState(true);
     const [edadTitular, setEdadTitular] = useState(30);
     const [asientoTitular, setAsientoTitular] = useState(null);
     const [acompanantes, setAcompanantes] = useState([]);
@@ -149,11 +150,11 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
     const destinoSeleccionadoObj = viajeSeleccionadoObj ? destinos.find(d => d.id_destino === viajeSeleccionadoObj.id_destino) : null;
     const paqueteSeleccionadoObj = viajeSeleccionadoObj?.id_paquete ? paquetes.find(p => p.id_paquete === viajeSeleccionadoObj.id_paquete) : null;
 
-    const cantidadViajeros = 1 + acompanantes.length;
-    const cantidadPagantes = 1 + acompanantes.filter(a => (parseInt(a.edad) || 0) >= 3).length;
+    const cantidadViajeros = (titularViaja ? 1 : 0) + acompanantes.length;
+    const cantidadPagantes = (titularViaja ? 1 : 0) + acompanantes.filter(a => (parseInt(a.edad) || 0) >= 3).length;
     const precioUnitario = obtenerPrecioViaje(idViaje);
     const montoTotalCalculado = Number((
-        calcularTarifaPorEdad(precioUnitario, edadTitular).monto +
+        (titularViaja ? calcularTarifaPorEdad(precioUnitario, edadTitular).monto : 0) +
         acompanantes.reduce((s, a) => s + calcularTarifaPorEdad(precioUnitario, a.edad).monto, 0)
     ).toFixed(2));
     const abonoMinimoRequerido = ABONO_POR_INTEGRANTE * cantidadPagantes;
@@ -247,6 +248,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
         setIdEditando(null);
         setClienteExistenteReserva(null);
         setIdViaje('');
+        setTitularViaja(true);
         setEdadTitular(30);
         setAsientoTitular(null);
         setAcompanantes([]);
@@ -281,6 +283,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
         setClienteExistenteReserva(c);
         setAsignarViajeAhora(true);
         setIdViaje('');
+        setTitularViaja(true);
         setAsientoTitular(null);
         setAcompanantes([]);
         setPasoWizard(2); // Salta linealmente a selección de viaje
@@ -290,7 +293,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
 
     const autoAsignarPuestosGrupo = () => {
         if (!viajeSeleccionadoObj) return;
-        const totalIntegrantes = 1 + acompanantes.length;
+        const totalIntegrantes = (titularViaja ? 1 : 0) + acompanantes.length;
         const ocupadosNums = new Set(
             integrantes
                 .filter(i => {
@@ -312,11 +315,19 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
         }
 
         if (asignados.length > 0) {
-            setAsientoTitular(asignados[0]);
-            setAcompanantes(prev => prev.map((a, idx) => ({
-                ...a,
-                numero_asiento: asignados[idx + 1] || null
-            })));
+            if (titularViaja) {
+                setAsientoTitular(asignados[0]);
+                setAcompanantes(prev => prev.map((a, idx) => ({
+                    ...a,
+                    numero_asiento: asignados[idx + 1] || null
+                })));
+            } else {
+                setAsientoTitular(null);
+                setAcompanantes(prev => prev.map((a, idx) => ({
+                    ...a,
+                    numero_asiento: asignados[idx] || null
+                })));
+            }
         }
     };
 
@@ -346,6 +357,11 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
         } else if (pasoWizard === 2) {
             if (!idViaje) {
                 alert('Por favor selecciona un viaje disponible para continuar.');
+                return;
+            }
+        } else if (pasoWizard === 3) {
+            if (!titularViaja && acompanantes.length === 0) {
+                alert('Si el titular no viajará en este itinerario, debes agregar al menos un pasajero acompañante.');
                 return;
             }
         }
@@ -461,14 +477,14 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
             }
 
             const integrantesPayload = [
-                {
+                ...(titularViaja ? [{
                     nombre: titular.nombre,
                     apellido: titular.apellido,
                     tipo_documento: titular.tipo_documento || 'Cédula',
                     documento_id: titular.id_cliente,
                     edad: parseInt(edadTitular) || 30,
                     numero_asiento: asientoTitular ? parseInt(asientoTitular) : null
-                },
+                }] : []),
                 ...acompanantes.map(a => ({
                     nombre: a.nombre.trim(),
                     apellido: a.apellido.trim(),
@@ -489,7 +505,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
             });
 
             const puestosAsignadosStr = [
-                asientoTitular ? `#${String(asientoTitular).padStart(2, '0')}` : null,
+                ...(titularViaja && asientoTitular ? [`#${String(asientoTitular).padStart(2, '0')}`] : []),
                 ...acompanantes.map(a => a.numero_asiento ? `#${String(a.numero_asiento).padStart(2, '0')}` : null)
             ].filter(Boolean).join(', ');
 
@@ -568,14 +584,14 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
     const datosExpediente = clienteExpediente ? obtenerResumenCliente(clienteExpediente.id_cliente) : null;
 
     const listaPasajerosParaCroquis = [
-        {
+        ...(titularViaja ? [{
             documento_id: (clienteExistenteReserva ? clienteExistenteReserva.id_cliente : form.id_cliente) || 'TITULAR',
             nombre: (clienteExistenteReserva ? clienteExistenteReserva.nombre : form.nombre) || 'Titular',
             apellido: (clienteExistenteReserva ? clienteExistenteReserva.apellido : form.apellido) || '',
             edad: edadTitular,
             numero_asiento: asientoTitular,
             esTitular: true
-        },
+        }] : []),
         ...acompanantes
     ];
 
@@ -968,7 +984,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                                         </p>
                                     </div>
 
-                                    {acompanantes.length === 0 && (
+                                    {acompanantes.length === 0 && titularViaja && (
                                         <button
                                             type="button"
                                             className="btn btn-ghost"
@@ -980,20 +996,57 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                                     )}
                                 </div>
 
-                                {/* Tarjeta del Titular (Viajero #1) */}
-                                <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                                {/* Tarjeta del Titular + Pregunta si viaja o solo es responsable */}
+                                <div style={{ background: titularViaja ? '#f0fdfa' : '#f8fafc', border: `1.5px solid ${titularViaja ? '#99f6e4' : 'var(--border)'}`, borderRadius: 12, padding: '12px 14px', marginBottom: 14 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                                            <Badge tipo="info">Viajero #1 (Titular)</Badge>
+                                            <Badge tipo={titularViaja ? 'info' : 'neutral'}>
+                                                {titularViaja ? 'Viajero #1 (Titular)' : 'Solo Titular (No viaja)'}
+                                            </Badge>
                                             <strong style={{ fontSize: '0.92rem' }}>
                                                 {clienteExistenteReserva ? `${clienteExistenteReserva.nombre} ${clienteExistenteReserva.apellido}` : `${form.nombre} ${form.apellido}`}
                                             </strong>
                                             <span className="cell-sub">Tel: {clienteExistenteReserva ? clienteExistenteReserva.telefono : form.telefono}</span>
                                             <span className="cell-sub">Edad: {edadTitular} años</span>
-                                            <Badge tipo="neutral">Tarifa: {formatoMoneda(calcularTarifaPorEdad(precioUnitario, edadTitular).monto)}</Badge>
+                                            <Badge tipo={titularViaja ? 'success' : 'neutral'}>
+                                                {titularViaja
+                                                    ? `Tarifa: ${formatoMoneda(calcularTarifaPorEdad(precioUnitario, edadTitular).monto)}`
+                                                    : 'Sin costo ($0,00)'}
+                                            </Badge>
                                         </div>
-                                        <span style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 700 }}>✓ Titular</span>
+
+                                        <label
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                cursor: 'pointer',
+                                                background: '#fff',
+                                                padding: '6px 12px',
+                                                borderRadius: 8,
+                                                border: '1px solid #cbd5e1',
+                                                fontSize: '0.82rem',
+                                                fontWeight: 700,
+                                                color: '#0f172a'
+                                            }}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={titularViaja}
+                                                onChange={(e) => {
+                                                    const viaja = e.target.checked;
+                                                    setTitularViaja(viaja);
+                                                    if (!viaja) setAsientoTitular(null);
+                                                }}
+                                            />
+                                            <span>¿El titular también viajará?</span>
+                                        </label>
                                     </div>
+                                    {!titularViaja && (
+                                        <div style={{ marginTop: 8, fontSize: '0.78rem', color: '#b45309', fontWeight: 600 }}>
+                                            ℹ️ El cliente titular quedará únicamente como responsable de la reserva y los pagos (no ocupa puesto ni se le cobra pasaje). Agrega abajo a los viajeros.
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Formulario para agregar acompañantes con teléfono y correo */}
@@ -1220,13 +1273,13 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                                     })}
                                     pasajerosGrupo={listaPasajerosParaCroquis}
                                     onAsignarAsiento={(idxPasajero, numAsiento) => {
-                                        if (idxPasajero === 0) {
+                                        if (titularViaja && idxPasajero === 0) {
                                             if (numAsiento !== null) {
                                                 setAcompanantes(prev => prev.map(a => a.numero_asiento === numAsiento ? { ...a, numero_asiento: null } : a));
                                             }
                                             setAsientoTitular(numAsiento);
                                         } else {
-                                            const idxAcomp = idxPasajero - 1;
+                                            const idxAcomp = titularViaja ? idxPasajero - 1 : idxPasajero;
                                             if (numAsiento !== null && asientoTitular === numAsiento) {
                                                 setAsientoTitular(null);
                                             }
@@ -1238,11 +1291,19 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                                         }
                                     }}
                                     onAutoAsignar={(nuevosNums) => {
-                                        setAsientoTitular(nuevosNums[0] || null);
-                                        setAcompanantes(prev => prev.map((a, i) => ({
-                                            ...a,
-                                            numero_asiento: nuevosNums[i + 1] || null
-                                        })));
+                                        if (titularViaja) {
+                                            setAsientoTitular(nuevosNums[0] || null);
+                                            setAcompanantes(prev => prev.map((a, i) => ({
+                                                ...a,
+                                                numero_asiento: nuevosNums[i + 1] || null
+                                            })));
+                                        } else {
+                                            setAsientoTitular(null);
+                                            setAcompanantes(prev => prev.map((a, i) => ({
+                                                ...a,
+                                                numero_asiento: nuevosNums[i] || null
+                                            })));
+                                        }
                                     }}
                                     titulo={`Croquis de ${viajeSeleccionadoObj?.metodo_transporte || 'Transporte'}`}
                                 />
@@ -1284,7 +1345,7 @@ export default function Clientes({ esAdmin = true, esOperador = false, esVendedo
                                             <div className="cell-sub">Asientos Asignados</div>
                                             <strong>{cantidadViajeros} persona(s)</strong>
                                             <div style={{ fontSize: '0.78rem', color: '#15803d', fontWeight: 700 }}>
-                                                💺 {[asientoTitular ? `#${asientoTitular}` : null, ...acompanantes.map(a => a.numero_asiento ? `#${a.numero_asiento}` : null)].filter(Boolean).join(', ') || 'Automático'}
+                                                💺 {[titularViaja && asientoTitular ? `#${asientoTitular}` : null, ...acompanantes.map(a => a.numero_asiento ? `#${a.numero_asiento}` : null)].filter(Boolean).join(', ') || 'Automático'}
                                             </div>
                                         </div>
 
