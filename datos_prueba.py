@@ -119,11 +119,12 @@ def poblar():
             cantidad = random.randint(3, min(12, v.cupos_disponibles))
             for _ in range(cantidad):
                 personas = random.randint(1, 4)
+                titular = random.choice(clientes)
                 monto = paquete.precio_paquete * personas
                 fecha = datetime.combine(v.fecha_salida, datetime.min.time()) - timedelta(days=random.randint(5, 45))
                 estatus = random.choices(["Pagado", "Abonado"], weights=[6, 4])[0]
                 r = Reserva(
-                    id_cliente=random.choice(clientes).id_cliente, id_viaje=v.id_viaje,
+                    id_cliente=titular.id_cliente, id_viaje=v.id_viaje,
                     fecha_reserva=fecha, monto_total=monto, estatus_pago=estatus
                 )
                 session.add(r)
@@ -140,7 +141,15 @@ def poblar():
                     fecha_pago=fecha + timedelta(days=random.randint(0, 3))
                 ))
 
-                for _ in range(personas):
+                session.add(Integrante(
+                    id_reserva=r.id_reserva,
+                    nombre=titular.nombre,
+                    apellido=titular.apellido,
+                    tipo_documento=titular.tipo_documento,
+                    documento_id=titular.id_cliente,
+                    edad=random.randint(22, 55),
+                ))
+                for _ in range(personas - 1):
                     session.add(Integrante(
                         id_reserva=r.id_reserva, nombre=random.choice(NOMBRES),
                         apellido=random.choice(APELLIDOS),
